@@ -1,0 +1,10 @@
+%input{type: 'hidden', value: "#{@canvas_url}", name: :canvas_oauth_url}
+%form.oauth2
+  %h2 Canvas Authentication Required
+  %button.btn-canvas#oauth_btn Authenticate
+
+%form{id: 'lti_form', action: "#{request.original_url}", method: 'post'}
+  - @lti_params.each do |k,v|
+    %input{:type =>"hidden", :value=>"#{v}", :name=>"#{k}"}
+
+= javascript_include_tag "coalescing_panda/oauth2"

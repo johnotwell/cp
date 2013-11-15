@@ -1,0 +1,4 @@
+module CoalescingPanda
+  class ApplicationController < ActionController::Base
+  end
+end
