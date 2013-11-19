@@ -27,7 +27,7 @@ module CoalescingPanda
         @tp = IMS::LTI::ToolProvider.new(@lti_account.key, @lti_account.secret, params)
         authorized = @tp.valid_request?(request)
       end
-      authorized = authorized && (roles == 0 || (roles && lti_roles).count > 1)
+      authorized = authorized && (roles == 0 || (roles && lti_roles).count > 0)
       authorized = authorized && @lti_account.validate_nonce(params['oauth_nonce'], DateTime.strptime(params['oauth_timestamp'],'%s'))
       if !authorized
         render :text => 'Invalid Credentials, please contact your Administrator.', :status => :unauthorized
@@ -55,6 +55,21 @@ module CoalescingPanda
               :none
           end
         }.uniq
+    end
+
+    def canvas_environment
+      case request.host
+        when /\.beta\..+\.[a-z]{2,}.*/
+          :beta
+        when /\.test\..+\.[a-z]{2,}.*/
+          :test
+        when /(localhost)|(127\.0\.0\.1).*/
+          :dev
+        when /https:\/\/.*/
+          :production
+        else
+          :unknown
+      end
     end
 
   end

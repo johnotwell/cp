@@ -1,6 +1,6 @@
 module CoalescingPanda
   class Engine < ::Rails::Engine
-    config.autoload_paths += Dir["#{config.root}/lib/**/"]
+    config.autoload_once_paths += Dir["#{config.root}/lib/**/"]
     isolate_namespace CoalescingPanda
 
     initializer 'coalescing_panda.app_controller' do |app|

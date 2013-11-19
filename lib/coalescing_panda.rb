@@ -19,7 +19,6 @@ module CoalescingPanda
   end
 
   def self.lti_navigation(navigation, options)
-    raise LtiNavigationInUse.new("#{navigation} can only be defined once") if @@lti_navigation.has_key?(navigation)
     @@lti_navigation[navigation] = options
   end
 
