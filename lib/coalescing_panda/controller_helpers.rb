@@ -3,13 +3,16 @@ module CoalescingPanda
 
     def canvas_oauth2
       user_id = params['user_id']
-      api_domain = params['custom_canvas_api_domain']
+      uri = URI.parse(params['launch_presentation_return_url'])
+      api_domain = uri.host
+      api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
+      scheme = uri.scheme + '://'
 
       if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
-        @client = Bearcat::Client.new(token: token, prefix: ENV['OAUTH_PROTOCOL']+'://'+api_domain)
-      else
-        client_id = ENV['OAUTH_CLIENT_ID']
-        client = Bearcat::Client.new(prefix: 'http://'+api_domain)
+        @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
+      elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
+        client_id = @lti_account.oauth2_client_id
+        client = Bearcat::Client.new(prefix: scheme+api_domain)
         @lti_params = params.to_hash
         @canvas_url = client.auth_redirect_url(client_id,
                                                coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
@@ -65,10 +68,8 @@ module CoalescingPanda
           :test
         when /(localhost)|(127\.0\.0\.1).*/
           :dev
-        when /https:\/\/.*/
-          :production
         else
-          :unknown
+          :production
       end
     end
 
