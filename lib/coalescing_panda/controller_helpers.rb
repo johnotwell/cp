@@ -61,13 +61,9 @@ module CoalescingPanda
     end
 
     def canvas_environment
-      case request.host
-        when /\.beta\..+\.[a-z]{2,}.*/
-          :beta
-        when /\.test\..+\.[a-z]{2,}.*/
+      case params['custom_test_environment']
+        when 'true'
           :test
-        when /(localhost)|(127\.0\.0\.1).*/
-          :dev
         else
           :production
       end

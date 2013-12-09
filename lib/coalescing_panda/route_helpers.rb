@@ -16,13 +16,8 @@ module CoalescingPanda
       path = "#{base_path}/#{nav.to_s}"
       lti_options[:url] = path.split('/').reject(&:empty?).join('_')
       post path, options, &block
+      CoalescingPanda::register_navigation(nav)
       CoalescingPanda::lti_navigation(nav, lti_options)
     end
-
-    def lti_mount(app, options = nil)
-      CoalescingPanda.lti_options = options && options.delete(:lti_options)
-      mount(app, options)
-    end
-
   end
 end

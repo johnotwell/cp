@@ -11,6 +11,15 @@ module CoalescingPanda
       tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => (lti_options[:launch_url])|| 'ABC')
       tc.set_ext_param(platform, :domain, request.host)
       tc.set_ext_param(platform, :privacy_level, 'public')
+
+      if(lti_options.has_key?(:custom_fields))
+        tc.set_ext_param(platform, :custom_fields, lti_options[:custom_fields])
+      
+        lti_options[:custom_fields].each do |k, v|
+         tc.set_ext_param(platform, k, v)  
+        end  
+      end
+
       lti_nav.each do |k, v|
         tc.set_ext_param(platform, "#{k.to_s}_navigation".to_sym, ext_params(v) )
       end
@@ -21,7 +30,7 @@ module CoalescingPanda
     end
 
     private
-
+      
     def ext_params(options)
       url = options.delete(:url)
       options[:url] = main_app.send(url+'_url')
