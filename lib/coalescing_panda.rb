@@ -1,5 +1,4 @@
 require "coalescing_panda/engine" if defined?(Rails)
-require "coalescing_panda/navigation"
 require 'ims/lti'
 require 'bearcat'
 require 'oauth/request_proxy/rack_request'
