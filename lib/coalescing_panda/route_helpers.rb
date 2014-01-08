@@ -3,7 +3,7 @@ module CoalescingPanda
     def lti_nav(nav, *rest, &block)
       base_path = Rails.application.routes.named_routes[:coalescing_panda].path.spec
       raise LtiNavigationInUse.new('CoalescingPanda must be mounted before defining lti_nav routes') if base_path.blank?
-      valid_options = [:course, :user, :account, :editor, :external_tool]
+      valid_options = [:course, :user, :account, :editor_button, :external_tool]
       if rest.empty? && nav.is_a?(Hash)
         options = nav
         nav, to = options.find {|name, _value| valid_options.include? name}

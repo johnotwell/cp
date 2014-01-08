@@ -11,7 +11,7 @@ Configuration
 
 Add the following line to routes.rb file. passing in the title to lti_options.
 
-    lti_mount CoalescingPanda::Engine, at: "/lti", lti_options:{title:'LTI Tool Title'}
+    mount CoalescingPanda::Engine, at: "/lti"
 
 in your routes file below where you mounted your engine use the following to specify custom navigation:
 
@@ -28,6 +28,13 @@ The paths for each of the navigation items will be the lti_mount path followed b
 The tool will generate XML that can be used to configure the tool in Canvas. The url for the config will be the lti_mount path followed by config. i.e:
 
     /lti/config
+
+An initializer will also need to be created to populate the options for lti tool and lti navigation. This can be done by creating an initializer
+in the intializers folder in your rails project, and includeing the following:
+
+    CoalescingPanda.lti_options= {title:'LTI Tool Title'}
+    CoalescingPanda.stage_navigation(:course, {enabled: true, text: 'course link title', visibility: 'admins'})
+    CoalescingPanda.stage_navigation(:admin, {enabled: true, text: 'admin link title', visibility: 'admins'})
 
 ### DB Setup
 

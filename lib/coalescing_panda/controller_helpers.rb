@@ -37,6 +37,13 @@ module CoalescingPanda
       end
     end
 
+    def lti_editor_button_response(return_type, return_params)
+      valid_return_types = [:image_url, :iframe, :url]
+      raise "invalid editor button return type #{return_type}" unless valid_return_types.include?(return_type)
+      return_url = "#{params['launch_presentation_return_url']}?return_type=#{return_type.to_s}&#{URI.escape(return_params.collect{|k,v| "#{k}=#{v}"}.join('&'))}"
+      redirect_to return_url
+    end
+
     def lti_roles
         @lti_roles ||= params['roles'].split(',').map { |role|
           case role.downcase.strip

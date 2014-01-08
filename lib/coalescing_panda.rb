@@ -9,7 +9,7 @@ module CoalescingPanda
 
   @@lti_navigation = {}
   @@staged_navigation = {}
-  @@lti_options
+  @@lti_options = {}
 
   def self.lti_options= lti_options
     @@lti_options = lti_options
@@ -20,7 +20,7 @@ module CoalescingPanda
   end
 
   def self.register_navigation(navigation)
-    @@lti_navigation[navigation] = {}
+    @@lti_navigation[navigation] ||= {}
   end
 
   def self.stage_navigation(navigation, options)

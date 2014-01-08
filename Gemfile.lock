@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (0.0.8)
+    coalescing_panda (0.0.11)
       bearcat (>= 0.4)
       haml-rails
       ims-lti
@@ -40,6 +40,13 @@ GEM
     bearcat (0.4)
       footrest (>= 0.2.2)
     builder (3.1.4)
+    columnize (0.3.6)
+    debugger (1.6.2)
+      columnize (>= 0.3.1)
+      debugger-linecache (~> 1.2.0)
+      debugger-ruby_core_source (~> 1.2.3)
+    debugger-linecache (1.2.0)
+    debugger-ruby_core_source (1.2.4)
     diff-lcs (1.2.5)
     docile (1.1.0)
     erubis (2.7.0)
@@ -145,6 +152,7 @@ PLATFORMS
 
 DEPENDENCIES
   coalescing_panda!
+  debugger
   nokogiri
   rspec-rails
   shoulda-matchers

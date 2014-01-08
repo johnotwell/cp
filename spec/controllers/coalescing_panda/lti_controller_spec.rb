@@ -16,11 +16,13 @@ describe CoalescingPanda::LtiController do
 
     it 'generates lti nav config' do
       controller.main_app.stub(:test_action_url) {'foo'}
-      CoalescingPanda.lti_navigation(:account, {
+      CoalescingPanda.stage_navigation(:account, {
         url: 'test_action',
         text: 'My Title',
         enabled: false
       })
+      CoalescingPanda.register_navigation(:account)
+      CoalescingPanda.propagate_lti_navigation
       get(:lti_config)
       xml = Nokogiri::XML(response.body)
       account_nav = xml.at_xpath('//lticm:options[@name="account_navigation"]')

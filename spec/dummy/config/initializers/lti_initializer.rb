@@ -1,0 +1,1 @@
+CoalescingPanda.lti_options= {title:'LTI Tool'}
