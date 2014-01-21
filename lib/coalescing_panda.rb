@@ -1,8 +1,11 @@
-require "coalescing_panda/engine" if defined?(Rails)
+require 'coalescing_panda/engine' if defined?(Rails)
+require 'jquery-rails'
 require 'ims/lti'
 require 'bearcat'
 require 'oauth/request_proxy/rack_request'
 require 'haml'
+require 'sass-rails'
+require 'coffee-rails'
 
 module CoalescingPanda
   class LtiNavigationInUse < StandardError;end

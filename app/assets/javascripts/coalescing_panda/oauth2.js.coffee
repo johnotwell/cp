@@ -4,5 +4,5 @@ $ ->
     newwindow.focus() if window.focus
     false
 
-  $('#oauth_btn').bind 'click', (event) ->
+  $('#oauth_btn').bind 'click', ->
     canvasAuth($("input[name='canvas_oauth_url']").val())

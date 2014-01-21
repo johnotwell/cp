@@ -19,7 +19,9 @@ Gem::Specification.new do |s|
   s.add_dependency "bearcat", ">=0.6"
   s.add_dependency "ims-lti"
   s.add_dependency "haml-rails"
+  s.add_dependency "sass-rails", "~> 4.0.0"
   s.add_dependency "jquery-rails"
+  s.add_dependency "coffee-rails", "~> 4.0.0"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
