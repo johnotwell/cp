@@ -2,12 +2,15 @@ module CoalescingPanda
   module ControllerHelpers
 
     def canvas_oauth2(*roles)
+      return if have_session?
       if lti_authorize!(*roles)
         user_id = params['user_id']
         uri = URI.parse(params['launch_presentation_return_url'])
         api_domain = uri.host
         api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
         scheme = uri.scheme + '://'
+        session['user_id'] = user_id
+        session['uri'] = params['launch_presentation_return_url']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
           @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
@@ -24,6 +27,18 @@ module CoalescingPanda
           render 'coalescing_panda/oauth2/oauth2'
         end
       end
+    end
+
+    def have_session?
+      if(session['user_id'] && session['uri'])
+        uri = URI.parse(session['uri'])
+        api_domain = uri.host
+        api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
+        scheme = uri.scheme + '://'
+        token = CanvasApiAuth.where('user_id = ? and api_domain = ?', session['user_id'], api_domain).pluck(:api_token).first
+        @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain) if token
+      end
+      !!@client
     end
 
     def lti_authorize!(*roles)
