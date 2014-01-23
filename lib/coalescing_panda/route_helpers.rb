@@ -6,7 +6,7 @@ module CoalescingPanda
       valid_options = [:course, :user, :account, :editor_button, :external_tool]
       if rest.empty? && nav.is_a?(Hash)
         options = nav
-        nav, to = options.find {|name, _value| valid_options.include? name}
+        nav, to = options.find {|name, _| valid_options.include? name}
         options[:to] = to
         options.delete(nav)
       else

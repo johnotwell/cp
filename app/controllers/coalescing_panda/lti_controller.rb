@@ -27,6 +27,14 @@ module CoalescingPanda
       render :xml => xml
     end
 
+    def styleguide
+      render file: 'coalescing_panda/styleguide/styleguide.html'
+    end
+
+    def launch
+      render 'coalescing_panda/launch'
+    end
+
     private
 
     def setting_name(name)

@@ -1,0 +1,16 @@
+# required - the file to generate
+out_file: public/styleguide.html
+
+# required - the files to extract docs from
+glob: app/assets/stylesheets/**/*.css.scss
+
+# optional - components can display where they are defined, this will be
+# stripped from that definition
+base_dir: app/stylesheets
+
+# optional - Inline DressCode CSS styles, defaults to true
+dress_code_css: true
+
+# optional - Inline DressCode JS, defaults to true
+dress_code_js: true
+
