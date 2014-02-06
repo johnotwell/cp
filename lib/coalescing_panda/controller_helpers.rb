@@ -9,15 +9,17 @@ module CoalescingPanda
         api_domain = uri.host
         api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
         scheme = uri.scheme + '://'
+        @lti_params = params.to_hash
         session['user_id'] = user_id
         session['uri'] = params['launch_presentation_return_url']
+        session['lis_person_sourcedid'] = @lti_params['lis_person_sourcedid']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
           @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
         elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
           client_id = @lti_account.oauth2_client_id
           client = Bearcat::Client.new(prefix: scheme+api_domain)
-          @lti_params = params.to_hash
+
           @canvas_url = client.auth_redirect_url(client_id,
                                                  coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
                                                                                        user_id: user_id, api_domain: api_domain}))
@@ -30,7 +32,7 @@ module CoalescingPanda
     end
 
     def have_session?
-      if(session['user_id'] && session['uri'])
+      if (session['user_id'] && session['uri'])
         uri = URI.parse(session['uri'])
         api_domain = uri.host
         api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
