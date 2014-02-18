@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", "~> 4.0.1"
   s.add_dependency "bearcat", ">=0.6"
+  s.add_dependency "macaddr", "1.6.1"
   s.add_dependency "ims-lti"
   s.add_dependency "haml-rails"
   s.add_dependency "sass-rails", "~> 4.0.0"
