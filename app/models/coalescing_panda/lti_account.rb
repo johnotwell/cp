@@ -6,10 +6,12 @@ module CoalescingPanda
              :foreign_key => :coalescing_panda_lti_account_id,
              :class_name => 'CoalescingPanda::LtiNonce'
 
+    attr_accessible :name, :key, :secret, :oauth2_client_id, :oauth2_client_key
+
     def validate_nonce(nonce, timestamp)
       cleanup_nonce
       if timestamp > 15.minutes.ago
-        coalescing_panda_lti_nonces.create(nonce:nonce, timestamp:timestamp).persisted?
+        coalescing_panda_lti_nonces.create(nonce: nonce, timestamp: timestamp).persisted?
       end
     end
 

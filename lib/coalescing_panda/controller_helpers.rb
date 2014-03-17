@@ -32,6 +32,11 @@ module CoalescingPanda
     end
 
     def have_session?
+      #if this is a new lti launch flush the session
+      if params['tool_consumer_instance_guid']
+        reset_session
+        logger.info("resetting session params")
+      end
       if (session['user_id'] && session['uri'])
         uri = URI.parse(session['uri'])
         api_domain = uri.host
