@@ -8,7 +8,7 @@ module CoalescingPanda
       lti_nav = CoalescingPanda.lti_paths
       platform = 'canvas.instructure.com'
       host = "#{request.scheme}://#{request.host_with_port}"
-      tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => (lti_options[:launch_url])|| 'ABC')
+      tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => ("#{host}#{lti_options[:launch_route]}") || 'ABC')
       tc.set_ext_param(platform, :domain, request.host)
       tc.set_ext_param(platform, :privacy_level, 'public')
       if lti_options.has_key?(:custom_fields)
@@ -23,7 +23,8 @@ module CoalescingPanda
       end
 
       #strip the launch url
-      xml = tc.to_xml.sub(/<blti:launch_url>.*<\/blti:launch_url>/, '') if lti_options[:launch_url].blank?
+      xml = tc.to_xml
+      xml = xml.sub(/<blti:launch_url>.*<\/blti:launch_url>/, '') if lti_options[:launch_route].blank?
       render :xml => xml
     end
 
