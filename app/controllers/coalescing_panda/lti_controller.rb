@@ -36,6 +36,11 @@ module CoalescingPanda
       render 'coalescing_panda/launch'
     end
 
+    def start_session
+      session['started'] = true
+      redirect_to CGI::unescape(params['referer'])
+    end
+
     private
 
     def setting_name(name)

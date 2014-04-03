@@ -58,6 +58,8 @@ module CoalescingPanda
       authorized = authorized && @lti_account.validate_nonce(params['oauth_nonce'], DateTime.strptime(params['oauth_timestamp'], '%s'))
       if !authorized
         render :text => 'Invalid Credentials, please contact your Administrator.', :status => :unauthorized
+      elsif authorized && session['started'].blank?
+        render(text: "<script>top.window.location='#{start_session_url(referer: CGI::escape(request.referer))}';</script>")
       end
       authorized
     end
