@@ -19,10 +19,10 @@ module CoalescingPanda
         elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
           client_id = @lti_account.oauth2_client_id
           client = Bearcat::Client.new(prefix: scheme+api_domain)
-
+          session['state'] = SecureRandom.hex(32)
           @canvas_url = client.auth_redirect_url(client_id,
                                                  coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
-                                                                                       user_id: user_id, api_domain: api_domain}))
+                                                                                       user_id: user_id, api_domain: api_domain, state: session['state']}))
           #delete the added params so the original oauth sig still works
           @lti_params.delete('action')
           @lti_params.delete('controller')
@@ -32,11 +32,12 @@ module CoalescingPanda
     end
 
     def have_session?
-      #if this is a new lti launch flush the session
-      if params['tool_consumer_instance_guid']
+      if session['user_id'] != params['user_id']
         reset_session
         logger.info("resetting session params")
       end
+      session['user_id'] = params['user_id']
+
       if (session['user_id'] && session['uri'])
         uri = URI.parse(session['uri'])
         api_domain = uri.host
@@ -58,8 +59,6 @@ module CoalescingPanda
       authorized = authorized && @lti_account.validate_nonce(params['oauth_nonce'], DateTime.strptime(params['oauth_timestamp'], '%s'))
       if !authorized
         render :text => 'Invalid Credentials, please contact your Administrator.', :status => :unauthorized
-      elsif authorized && session['started'].blank?
-        render(text: "<script>top.window.location='#{start_session_url(referer: CGI::escape(request.referer))}';</script>")
       end
       authorized
     end

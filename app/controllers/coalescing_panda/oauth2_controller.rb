@@ -7,7 +7,7 @@ module CoalescingPanda
     end
 
     def redirect
-      unless params[:error]
+      if !params[:error] && valid_state_token
         lti_account = LtiAccount.find_by_key(params[:key])
         client_id = lti_account.oauth2_client_id
         client_key = lti_account.oauth2_client_key
@@ -30,5 +30,9 @@ module CoalescingPanda
       ENV['OAUTH_PROTOCOL'] || 'https'
     end
 
+    def valid_state_token
+      return false unless params['state'].present? && session['state'].present?
+      params['state'] == session['state']
+    end
   end
 end

@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "sass-rails", "~> 4.0.0"
   s.add_dependency "jquery-rails"
   s.add_dependency "coffee-rails", "~> 4.0.0"
+  s.add_dependency 'protected_attributes'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
@@ -30,4 +31,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "nokogiri"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "debugger"
+  s.add_development_dependency "pry"
 end
