@@ -32,11 +32,11 @@ module CoalescingPanda
     end
 
     def have_session?
-      if session['user_id'] != params['user_id']
+      if params['tool_consumer_instance_guid'] && session['user_id'] != params['user_id']
         reset_session
         logger.info("resetting session params")
+        session['user_id'] = params['user_id']
       end
-      session['user_id'] = params['user_id']
 
       if (session['user_id'] && session['uri'])
         uri = URI.parse(session['uri'])
