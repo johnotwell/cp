@@ -12,7 +12,8 @@ module CoalescingPanda
         @lti_params = params.to_hash
         session['user_id'] = user_id
         session['uri'] = params['launch_presentation_return_url']
-        session['lis_person_sourcedid'] = @lti_params['lis_person_sourcedid']
+        session['lis_person_sourcedid'] = params['lis_person_sourcedid']
+        session['oauth_consumer_key'] = params['oauth_consumer_key']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
           @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
@@ -46,6 +47,9 @@ module CoalescingPanda
         token = CanvasApiAuth.where('user_id = ? and api_domain = ?', session['user_id'], api_domain).pluck(:api_token).first
         @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain) if token
       end
+
+      @lti_account = LtiAccount.find_by_key(session['oauth_consumer_key'])) if session['oauth_consumer_key']
+
       !!@client
     end
 
