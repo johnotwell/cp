@@ -48,7 +48,7 @@ module CoalescingPanda
         @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain) if token
       end
 
-      @lti_account = LtiAccount.find_by_key(session['oauth_consumer_key'])) if session['oauth_consumer_key']
+      @lti_account = LtiAccount.find_by_key(session['oauth_consumer_key']) if session['oauth_consumer_key']
 
       !!@client
     end
