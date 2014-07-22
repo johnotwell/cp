@@ -5,13 +5,14 @@ module CoalescingPanda
       return if have_session?
       if lti_authorize!(*roles)
         user_id = params['user_id']
-        uri = URI.parse(params['launch_presentation_return_url'])
+        launch_presentation_return_url = @lti_account.settings[:launch_presentation_return_url] || params['launch_presentation_return_url']
+        uri = URI.parse(launch_presentation_return_url)
         api_domain = uri.host
         api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
         scheme = uri.scheme + '://'
         @lti_params = params.to_hash
         session['user_id'] = user_id
-        session['uri'] = params['launch_presentation_return_url']
+        session['uri'] = launch_presentation_return_url
         session['lis_person_sourcedid'] = params['lis_person_sourcedid']
         session['oauth_consumer_key'] = params['oauth_consumer_key']
 
