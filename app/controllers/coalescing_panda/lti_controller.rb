@@ -6,6 +6,8 @@ module CoalescingPanda
     def lti_config
       lti_options = CoalescingPanda.lti_options
       lti_nav = CoalescingPanda.lti_paths
+      lti_nav[:course][:text] = params[:course_navigation_label] if params[:course_navigation_label].present?
+      lti_nav[:account][:text] = params[:account_navigation_label] if params[:account_navigation_label].present?
       platform = 'canvas.instructure.com'
       host = "#{request.scheme}://#{request.host_with_port}"
       tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => ("#{host}#{lti_options[:launch_route]}") || 'ABC')
