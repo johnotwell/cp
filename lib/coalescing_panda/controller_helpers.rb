@@ -15,6 +15,7 @@ module CoalescingPanda
         session['uri'] = launch_presentation_return_url
         session['lis_person_sourcedid'] = params['lis_person_sourcedid']
         session['oauth_consumer_key'] = params['oauth_consumer_key']
+        session['custom_canvas_account_id'] = params['custom_canvas_account_id']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
           @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
