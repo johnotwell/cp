@@ -1,13 +1,14 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (1.1.6)
+    coalescing_panda (1.1.8)
       bearcat (>= 0.9.18)
       coffee-rails (~> 4.0.0)
       haml-rails
       ims-lti
       jquery-rails
       macaddr (= 1.6.1)
+      p3p
       protected_attributes
       rails (~> 4.0.1)
       sass-rails (~> 4.0.0)
@@ -99,6 +100,8 @@ GEM
     nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
     oauth (0.4.7)
+    p3p (1.0.0)
+      rack
     polyglot (0.3.5)
     protected_attributes (1.0.8)
       activemodel (>= 4.0.1, < 5.0)
