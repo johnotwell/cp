@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131119165343) do
+ActiveRecord::Schema.define(version: 20140904223159) do
 
   create_table "coalescing_panda_canvas_api_auths", force: true do |t|
     t.string   "user_id"
@@ -35,6 +35,13 @@ ActiveRecord::Schema.define(version: 20131119165343) do
     t.integer  "coalescing_panda_lti_account_id"
     t.string   "nonce"
     t.datetime "timestamp"
+  end
+
+  create_table "coalescing_panda_sessions", force: true do |t|
+    t.string   "token"
+    t.text     "data"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
 end

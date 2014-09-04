@@ -59,3 +59,18 @@ To use OAuth2 create a before filter in your controller with :canvas_oath2 as th
 The following environment variable can be set to use http instead of https
 
     OAUTH_PROTOCOL=http
+
+
+#### SAFARI SESSION FIX
+When redirecting from the lti landing controller to the new application, the session will be lost if the new application is opened in an iFrame. In order to work around this problem, do the following:
+
+1) before you redirect add
+    token = CoalescingPanda::Session.create_from_session(session)
+    redirect_to conferences_path(restore_session_token: token)
+2) then in the applications application_controller.rb, add the following code snippet
+
+    before_filter :restore_session
+
+    def restore_session
+      CoalescingPanda::Session.restore_from_token(params[:restore_session_token], session) if params[:restore_session_token].present?
+    end
