@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (1.1.13)
+    coalescing_panda (1.1.14)
       bearcat (>= 0.9.18)
       coffee-rails (~> 4.0.0)
       haml-rails

@@ -1,5 +1,6 @@
 module CoalescingPanda
   class ApplicationController < ActionController::Base
+    require 'useragent'
 
     before_filter :session_check
 
