@@ -6,6 +6,7 @@ require 'oauth/request_proxy/rack_request'
 require 'haml'
 require 'sass-rails'
 require 'coffee-rails'
+require 'p3p'
 
 module CoalescingPanda
   class LtiNavigationInUse < StandardError;end
@@ -51,4 +52,3 @@ module CoalescingPanda
   end
 
 end
-

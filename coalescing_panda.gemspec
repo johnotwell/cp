@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency "coffee-rails", "~> 4.0.0"
   s.add_dependency 'protected_attributes'
   s.add_dependency 'p3p'
+  s.add_dependency 'useragent'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
