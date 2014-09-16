@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (1.1.14)
-      bearcat (>= 0.9.18)
+    coalescing_panda (1.1.15)
+      bearcat (>= 0.9.19)
       coffee-rails (~> 4.0.0)
       haml-rails
       ims-lti
@@ -42,7 +42,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     arel (4.0.2)
-    bearcat (0.9.18)
+    bearcat (0.9.19)
       footrest (>= 0.2.2)
     builder (3.1.4)
     coderay (1.1.0)
