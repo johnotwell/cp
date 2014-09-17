@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 4.0.1"
-  s.add_dependency "bearcat", ">=0.9.19"
+  s.add_dependency "bearcat", ">=0.9.20"
   s.add_dependency "macaddr", "1.6.1"
   s.add_dependency "ims-lti"
   s.add_dependency "haml-rails"
