@@ -16,22 +16,22 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 4.0.1"
-  s.add_dependency "bearcat", "~> 1.0.3"
+  s.add_dependency "bearcat", "~> 1.0.5"
   s.add_dependency "macaddr", "1.6.1"
   s.add_dependency "ims-lti"
   s.add_dependency "haml-rails"
   s.add_dependency "sass-rails", "~> 4.0.0"
   s.add_dependency "jquery-rails"
   s.add_dependency "coffee-rails", "~> 4.0.0"
-  s.add_dependency 'protected_attributes'
   s.add_dependency 'p3p'
   s.add_dependency 'useragent'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
+  s.add_development_dependency "factory_girl_rails"
   s.add_development_dependency "shoulda-matchers"
   s.add_development_dependency "nokogiri"
   s.add_development_dependency "simplecov"
-  s.add_development_dependency "debugger"
+  s.add_development_dependency "byebug"
   s.add_development_dependency "pry"
 end

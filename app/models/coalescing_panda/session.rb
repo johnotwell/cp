@@ -1,6 +1,5 @@
 module CoalescingPanda
   class Session < ActiveRecord::Base
-    attr_accessible :token, :data
     serialize :data, Hash
 
     def self.create_from_session(session)

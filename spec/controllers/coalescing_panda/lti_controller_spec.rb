@@ -1,12 +1,11 @@
 require 'spec_helper'
 
-describe CoalescingPanda::LtiController do
+describe CoalescingPanda::LtiController, :type => :controller do
   routes { CoalescingPanda::Engine.routes }
 
   describe '#lti_config' do
 
     it 'generates lti xml config'do
-      controller.main_app.stub(:test_action_url) {'foo'}
       get(:lti_config)
       xml = Nokogiri::XML(response.body)
       xml.at_xpath('//blti:title').text.should == 'LTI Tool'
@@ -15,7 +14,6 @@ describe CoalescingPanda::LtiController do
     end
 
     it 'generates lti nav config' do
-      controller.main_app.stub(:test_action_url) {'foo'}
       CoalescingPanda.stage_navigation(:account, {
         url: 'test_action',
         text: 'My Title',
@@ -33,12 +31,9 @@ describe CoalescingPanda::LtiController do
 
   end
 
-
   it 'get the url, from the action string' do
-    controller.main_app.stub(:test_action_url) {'foo'}
     options = controller.send(:ext_params, {url:'test_action'})
     options[:url].should == 'foo'
   end
-
 
 end

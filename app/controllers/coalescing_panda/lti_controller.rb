@@ -13,6 +13,7 @@ module CoalescingPanda
       tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => ("#{host}#{lti_options[:launch_route]}") || 'ABC')
       tc.set_ext_param(platform, :domain, request.host)
       tc.set_ext_param(platform, :privacy_level, 'public')
+      tc.set_custom_param(:custom_canvas_role, '$Canvas.membership.roles')
       if lti_options.has_key?(:custom_fields)
         tc.set_ext_param(platform, :custom_fields, lti_options[:custom_fields])
         lti_options[:custom_fields].each do |k, v|

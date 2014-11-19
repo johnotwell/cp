@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe CoalescingPanda::Oauth2Controller do
+describe CoalescingPanda::Oauth2Controller, :type => :controller do
   routes { CoalescingPanda::Engine.routes }
 
   describe "#redirect" do

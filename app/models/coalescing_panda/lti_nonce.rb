@@ -3,8 +3,6 @@ module CoalescingPanda
     validates :coalescing_panda_lti_account, :nonce, :timestamp, :presence => true
     validates :nonce, uniqueness: {scope: :coalescing_panda_lti_account}
     belongs_to :coalescing_panda_lti_account, :class_name => 'CoalescingPanda::LtiAccount'
-
-    attr_accessible :nonce, :timestamp
   end
 
   def cleanup
