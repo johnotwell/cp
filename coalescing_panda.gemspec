@@ -7,8 +7,8 @@ require "coalescing_panda/version"
 Gem::Specification.new do |s|
   s.name        = "coalescing_panda"
   s.version     = CoalescingPanda::VERSION
-  s.authors     = ["Nathan Mills"]
-  s.email       = ["nathanm@instructure.com"]
+  s.authors     = ["Nathan Mills", "Cody Tanner", "Jake Sorce"]
+  s.email       = ["nathanm@instructure.com", "ctanner@instructure.com", "jake@instructure.com"]
   s.homepage    = "http://www.instructure.com"
   s.summary     = "Canvas LTI and OAUTH2 mountable engine"
 
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency "coffee-rails", "~> 4.0.0"
   s.add_dependency 'p3p'
   s.add_dependency 'useragent'
+  s.add_dependency 'delayed_job_active_record'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
@@ -34,4 +35,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "byebug"
   s.add_development_dependency "pry"
+  s.add_development_dependency 'webmock'
 end

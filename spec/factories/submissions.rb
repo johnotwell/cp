@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :submission do
+  factory :submission, class: CoalescingPanda::Submission do
     user
     assignment
     canvas_submission_id '123'

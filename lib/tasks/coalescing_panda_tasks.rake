@@ -105,6 +105,13 @@ namespace :coalescing_panda do
       File.open("#{Rails.root}/app/models/user.rb", 'w') {|f| f.write(file_contents) }
     end
 
+    ### CanvasBatch.rb
+    if File.exist?("#{Rails.root}/app/models/canvas_batch.rb")
+      puts "Skipping canvas_batch.rb: File already exists"
+    else
+      file_contents = model_template("CanvasBatch", "CanvasBatch", [])
+      File.open("#{Rails.root}/app/models/canvas_batch.rb", 'w') {|f| f.write(file_contents) }
+    end
   end
 
   def model_template(model_name, coalescing_panda_model_name, associations = [])
@@ -119,9 +126,9 @@ namespace :coalescing_panda do
     results = ""
     associations.each do |association|
       if association.has_key?(:through)
-        results << "\t#{association[:type]} :#{association[:name]}, through: :#{association[:through]}, class_name: '#{association[:class_name]}'\n"
+        results << "  #{association[:type]} :#{association[:name]}, through: :#{association[:through]}, class_name: '#{association[:class_name]}'\n"
       else
-        results << "\t#{association[:type]} :#{association[:name]}, foreign_key: :#{association[:foreign_key]}, class_name: '#{association[:class_name]}'\n"
+        results << "  #{association[:type]} :#{association[:name]}, foreign_key: :#{association[:foreign_key]}, class_name: '#{association[:class_name]}'\n"
       end
     end
     results

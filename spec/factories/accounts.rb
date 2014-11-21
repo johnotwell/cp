@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :account, class: LtiAccount do
+  factory :account, class: CoalescingPanda::LtiAccount do
     sequence :name do |n|
       "Account #{n}"
     end

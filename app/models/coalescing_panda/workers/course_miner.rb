@@ -1,21 +1,34 @@
 class CoalescingPanda::Workers::CourseMiner
   SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignments, :submissions] #ORDER MATTERS!!
 
-  attr_accessor :api_client, :options, :account, :course, :canvas_account_id
+  attr_accessor :options, :account, :course, :batch
 
   def initialize(course, options = [])
     @course = course
     @account = course.account
-    @canvas_account_id = course.account.canvas_account_id
-    @api_client = Bearcat::Client.new(prefix: account.settings[:base_url], token: account.settings[:account_admin_api_token])
     @options = options
+    @batch = CoalescingPanda::CanvasBatch.create(status: "Queued")
+  end
+
+  def api_client
+    @api_client ||= Bearcat::Client.new(prefix: account.settings[:base_url], token: account.settings[:account_admin_api_token])
   end
 
   def start
-    SUPPORTED_MODELS.each do |model_key|
-      canvas_model_data(api_method(model_key.to_sym), model_key) if options.include?(model_key)
+    begin
+      batch.update_attributes(status: "Started", percent_complete: 0)
+      SUPPORTED_MODELS.each_with_index do |model_key, index|
+        index += 1
+        canvas_model_data(api_method(model_key.to_sym), model_key) if options.include?(model_key)
+        percent_complete = (index/(options.count.nonzero? || 1).to_f * 100).round(1)
+        batch.update_attributes(percent_complete: percent_complete)
+      end
+      batch.update_attributes(status: "Completed", percent_complete: 100)
+    rescue => e
+      batch.update_attributes(status: "Error", message: e.message)
     end
   end
+  handle_asynchronously :start
 
   def api_method(key)
     case key
@@ -28,7 +41,7 @@ class CoalescingPanda::Workers::CourseMiner
     when :assignments
       :assignments
     when :submissions
-      :get_course_submission
+      :get_course_submissions
     else
       raise "API METHOD DOESN'T EXIST"
     end
@@ -59,7 +72,7 @@ class CoalescingPanda::Workers::CourseMiner
       record.assign_attributes(standard_attributes(record, values))
       record.sis_id = sis_id(model_key, values) if record.respond_to?(:sis_id)
       create_associations(record, model_key, values)
-      record.save
+      record.save(validate: false)
     end
   end
 

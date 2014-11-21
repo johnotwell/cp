@@ -1,0 +1,15 @@
+#batch-info{data: {batch: @batch.to_json}}
+-if @batch.status == "Queued"
+  %h6 Data is queued for download from Canvas.
+-if @batch.status == "Completed"
+  %h6 Data successfully downloaded from Canvas.
+
+-if @batch.status == "Started"
+  %h6 Downloading data from Canvas
+  .progress.progress-striped.active
+    .bar{:style => "width: #{@batch.percent_complete}%;"}
+
+-if @batch.status == "Error"
+  %h6 Data failed to download from Canvas
+  %p
+    = @batch.message

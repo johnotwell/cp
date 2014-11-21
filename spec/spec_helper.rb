@@ -6,7 +6,14 @@ require 'shoulda/matchers'
 require 'nokogiri'
 require 'haml'
 require 'simplecov'
+require 'delayed_job_active_record'
+require 'factory_girl_rails'
+require 'pry'
+require 'webmock/rspec'
 
+WebMock.disable_net_connect!
+
+Delayed::Worker.delay_jobs = false
 SimpleCov.start
 
 # ENGINE_RAILS_ROOT=File.join(File.dirname(__FILE__), '../')

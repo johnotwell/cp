@@ -7,6 +7,7 @@ require 'haml'
 require 'sass-rails'
 require 'coffee-rails'
 require 'p3p'
+require 'delayed_job_active_record'
 
 module CoalescingPanda
   class LtiNavigationInUse < StandardError;end

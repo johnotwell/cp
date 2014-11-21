@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :assignment do
+  factory :assignment, class: CoalescingPanda::Assignment do
     name "test assignment"
     course
     sequence :canvas_assignment_id do |n|

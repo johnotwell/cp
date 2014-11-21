@@ -74,3 +74,49 @@ When redirecting from the lti landing controller to the new application, the ses
     def restore_session
       CoalescingPanda::Session.restore_from_token(params[:restore_session_token], session) if params[:restore_session_token].present?
     end
+
+### Coalescing Panda Models
+Coalescing panda now creates the canvas model structure for you. But to eliminate the need to write CoalescingPanda::Course instead of Course, all you have to do is run a rake task.
+
+rake coalescing_panda:create_models
+
+This will create a model Course that inherits from CoalescingPanda:Course and maintains all of the associations.
+Therefore you will still be able to write your model methods inside course.rb.
+
+### CoalescingPanda::Workers::CourseMiner
+Coalescing Panda now comes with a reusable data miner. What this worker does is makes api calls in the background with delayed jobs to populate all of the records for your given course. To start the worker run the following
+
+worker = CoalescingPanda::Workers::CourseMiner.new(Course.first, [:sections, :users, :enrollments, :assignments, :submissions])
+session[:canvas_batch_id] = worker.batch.id
+worker.start
+
+This will create the worker, add it to the session to track it's progress, and start it.
+
+### Canvas Batches
+If you would like the progress bar for a canvas batch such as the course miner to show, include the following snippet into your template.
+
+<%= render "coalescing_panda/canvas_batches/canvas_batch_flash" %>
+
+Add the following to your application.js
+
+    //= require coalescing_panda/canvas_batch
+
+This partial requires a method called current_batch. You can add this by adding the following line to your application controller:
+
+    helper CoalescingPanda::Engine.helpers
+
+When session[:canvas_batch_id] is set, javascript will ping the canvas batch controller for the status of your batch and display the results in a progress bar.
+NOTE: the session variable must be set before the server returns your template. Meaning if you update your view via ajax you would have to manually kick off the javascript that updates the progress bar. Here is an example
+
+In your controller you must respond_to js
+
+    def create
+        respond_to do |format|
+          format.js
+        end
+    end
+
+Then inside create.js.erb
+
+    $('#batch-container').html( "<%= j render('coalescing_panda/canvas_batches/canvas_batch_flash') %>" ).triggerHandler('batchStarted');
+

@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :user do
+  factory :user, class: CoalescingPanda::User do
     sequence :email do |n|
       "test#{n}@test.com"
     end

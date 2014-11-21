@@ -1,0 +1,4 @@
+- if current_batch.present?
+  - path = CoalescingPanda::Engine.routes.url_helpers.canvas_batch_path(current_batch)
+  -clear_path = CoalescingPanda::Engine.routes.url_helpers.clear_batch_session_path
+  #batch-progress{data: {batch: current_batch.try(:to_json), url: path, clear_path: clear_path} }

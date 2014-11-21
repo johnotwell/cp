@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141120153135) do
+ActiveRecord::Schema.define(version: 20141124160857) do
 
   create_table "coalescing_panda_assignments", force: true do |t|
     t.integer  "coalescing_panda_course_id"
@@ -36,6 +36,14 @@ ActiveRecord::Schema.define(version: 20141120153135) do
     t.string   "user_id"
     t.string   "api_domain"
     t.string   "api_token"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "coalescing_panda_canvas_batches", force: true do |t|
+    t.float    "percent_complete", default: 0.0
+    t.string   "status"
+    t.text     "message"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -84,6 +92,7 @@ ActiveRecord::Schema.define(version: 20141120153135) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "settings"
+    t.string   "canvas_account_id"
   end
 
   create_table "coalescing_panda_lti_nonces", force: true do |t|
@@ -162,5 +171,21 @@ ActiveRecord::Schema.define(version: 20141120153135) do
   add_index "coalescing_panda_users", ["canvas_user_id"], name: "index_coalescing_panda_users_on_canvas_user_id"
   add_index "coalescing_panda_users", ["coalescing_panda_lti_account_id"], name: "index_users_account"
   add_index "coalescing_panda_users", ["sis_id"], name: "index_coalescing_panda_users_on_sis_id"
+
+  create_table "delayed_jobs", force: true do |t|
+    t.integer  "priority",   default: 0, null: false
+    t.integer  "attempts",   default: 0, null: false
+    t.text     "handler",                null: false
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.string   "queue"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
 end
