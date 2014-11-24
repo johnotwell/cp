@@ -91,6 +91,7 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       CoalescingPanda::Enrollment.destroy_all
       worker.create_records(enrollments_response, :enrollments)
       expect(CoalescingPanda::Enrollment.count).to eq 3
+      expect(CoalescingPanda::Enrollment.last.workflow_state).to eq "active"
     end
 
     it 'creates assignments' do
