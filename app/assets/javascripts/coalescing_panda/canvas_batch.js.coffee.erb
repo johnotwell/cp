@@ -16,6 +16,7 @@ class CanvasBatchProgress
           clearInterval(window.batchInterval)
           $('#batch-progress').html(data)
           clearBatchFromSession(batch.id)
+          window.location.reload() if $('#batch-container').data('refresh')
 
       error: (message) ->
         $('#batch-progress').html('Batch status request failed')

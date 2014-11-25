@@ -68,7 +68,11 @@ class CoalescingPanda::Workers::CourseMiner
       canvas_id_key = "canvas_#{model_key.to_s.singularize}_id"
       values[canvas_id_key] = values["id"]
       values['workflow_state'] = values["enrollment_state"] if values.has_key?('enrollment_state')
-      record = course.send(model_key).where("#{canvas_id_key} = ?", values['id'].to_s).first_or_initialize
+      if model_key == :users
+        record = account.send(model_key).where("#{canvas_id_key} = ?", values['id'].to_s).first_or_initialize
+      else
+        record = course.send(model_key).where("#{canvas_id_key} = ?", values['id'].to_s).first_or_initialize
+      end
       record.coalescing_panda_lti_account_id = account.id if record.respond_to?(:coalescing_panda_lti_account_id)
       record.assign_attributes(standard_attributes(record, values))
       record.sis_id = sis_id(model_key, values) if record.respond_to?(:sis_id)
