@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141124160857) do
+ActiveRecord::Schema.define(version: 20141125185516) do
 
   create_table "coalescing_panda_assignments", force: true do |t|
     t.integer  "coalescing_panda_course_id"
@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(version: 20141124160857) do
     t.datetime "end_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type"
   end
 
   add_index "coalescing_panda_enrollments", ["canvas_enrollment_id"], name: "index_coalescing_panda_enrollments_on_canvas_enrollment_id"
