@@ -6,6 +6,8 @@ class CreateCoalescingPandaLtiAccounts < ActiveRecord::Migration
       t.string :secret
       t.string :oauth2_client_id
       t.string :oauth2_client_key
+      t.string :canvas_account_id
+      t.text :settings
 
       t.timestamps
     end

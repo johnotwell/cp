@@ -2,7 +2,8 @@ FactoryGirl.define do
   factory :submission, class: CoalescingPanda::Submission do
     user
     assignment
-    canvas_submission_id '123'
-    graded false
+    sequence :canvas_submission_id do |n|
+      n
+    end
   end
 end

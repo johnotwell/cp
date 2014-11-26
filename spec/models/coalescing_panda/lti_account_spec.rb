@@ -14,4 +14,10 @@ RSpec.describe CoalescingPanda::LtiAccount, :type => :model do
       expect(CoalescingPanda::LtiAccount.reflect_on_association(:courses).macro).to eql(:has_many)
     end
   end
+
+  context 'validations' do
+    it 'should require a canvas id' do
+      expect(FactoryGirl.build(:account, canvas_account_id: "")).to_not be_valid
+    end
+  end
 end

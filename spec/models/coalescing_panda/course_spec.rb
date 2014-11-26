@@ -34,4 +34,30 @@ RSpec.describe CoalescingPanda::Course, :type => :model do
       expect(CoalescingPanda::Course.reflect_on_association(:users).macro).to eql(:has_many)
     end
   end
+
+  context "validations" do
+    it "should require a canvas id" do
+      expect(FactoryGirl.build(:course, canvas_course_id: "")).to_not be_valid
+    end
+
+    it "should require an lti_account" do
+      expect(FactoryGirl.build(:course, coalescing_panda_lti_account_id: "")).to_not be_valid
+    end
+
+    it 'should be unique to an account' do
+      account = FactoryGirl.create(:account)
+      course = FactoryGirl.create(:course, account: account, canvas_course_id: "1")
+      expect { FactoryGirl.create(:course, account: account, canvas_course_id: "1") }.to raise_error ActiveRecord::RecordNotUnique
+    end
+
+    it 'should be unique to an term' do
+      term = FactoryGirl.create(:term)
+      course = FactoryGirl.create(:course, term: term, canvas_course_id: "1")
+      expect { FactoryGirl.create(:course, term: term, canvas_course_id: "1") }.to raise_error ActiveRecord::RecordNotUnique
+    end
+
+    it "should be valid with valid data" do
+      expect(FactoryGirl.build(:course)).to be_valid
+    end
+  end
 end

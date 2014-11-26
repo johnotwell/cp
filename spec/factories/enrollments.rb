@@ -1,7 +1,10 @@
 FactoryGirl.define do
   factory :enrollment, class: CoalescingPanda::Enrollment do
     user
-    course
-    canvas_enrollment_id '123'
+    section
+    sequence :canvas_enrollment_id do |n|
+      n
+    end
+    enrollment_type "StudentEnrollment"
   end
 end

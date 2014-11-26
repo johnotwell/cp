@@ -7,5 +7,8 @@ module CoalescingPanda
     has_many :assignments, foreign_key: :coalescing_panda_course_id, class_name: 'CoalescingPanda::Assignment'
     has_many :submissions, through: :assignments
     has_many :users, through: :sections, source: :users, class_name: 'CoalescingPanda::User'
+
+    validates :coalescing_panda_lti_account_id, presence: true
+    validates :canvas_course_id, presence: true
   end
 end

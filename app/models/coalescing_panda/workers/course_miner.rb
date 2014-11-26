@@ -68,6 +68,7 @@ class CoalescingPanda::Workers::CourseMiner
       canvas_id_key = "canvas_#{model_key.to_s.singularize}_id"
       values[canvas_id_key] = values["id"]
       values['workflow_state'] = values["enrollment_state"] if values.has_key?('enrollment_state')
+      values['enrollment_type'] = values['type'] if model_key == :enrollments
       if model_key == :users
         record = account.send(model_key).where("#{canvas_id_key} = ?", values['id'].to_s).first_or_initialize
       else

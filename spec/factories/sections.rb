@@ -1,6 +1,9 @@
 FactoryGirl.define do
   factory :section, class: CoalescingPanda::Section do
     course
-    canvas_section_id '123'
+    sequence :canvas_section_id do |n|
+      n
+    end
+
   end
 end

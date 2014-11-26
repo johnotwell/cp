@@ -34,6 +34,7 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     Bearcat::Client.any_instance.stub(:course_sections) { double(Bearcat::ApiArray, :all_pages! => sections_response) }
     Bearcat::Client.any_instance.stub(:course_enrollments) { double(Bearcat::ApiArray, :all_pages! => enrollments_response) }
     Bearcat::Client.any_instance.stub(:assignments) { double(Bearcat::ApiArray, :all_pages! => assignments_response) }
+    Bearcat::Client.any_instance.stub(:get_course_submissions) { double(Bearcat::ApiArray, :all_pages! => {}) }
     Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "1") { double(Bearcat::ApiArray, :all_pages! => submissions_response1) }
     Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "2") { double(Bearcat::ApiArray, :all_pages! => submissions_response2) }
   end
@@ -89,6 +90,8 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
 
     it 'creates enrollments' do
       CoalescingPanda::Enrollment.destroy_all
+      worker.create_records(sections_response, :sections)
+      worker.create_records(users_response, :users)
       worker.create_records(enrollments_response, :enrollments)
       expect(CoalescingPanda::Enrollment.count).to eq 3
       expect(CoalescingPanda::Enrollment.last.workflow_state).to eq "active"
@@ -103,6 +106,8 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     it 'creates submissions' do
       CoalescingPanda::Submission.destroy_all
       submissions_response = submissions_response1 + submissions_response2
+      worker.create_records(users_response, :users)
+      worker.create_records(assignments_response, :assignments)
       worker.create_records(submissions_response, :submissions)
       expect(CoalescingPanda::Submission.count).to eq 4
     end
@@ -125,9 +130,9 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     end
 
     it 'returns enrollments attributes' do
-      attributes = {"associated_user_id"=>nil, "course_id"=>1, "course_section_id"=>1, "created_at"=>"2014-11-07T21:17:54Z", "end_at"=>end_time, "id"=>1, "limit_privileges_to_course_section"=>false, "root_account_id"=>1, "start_at"=>start_time, "type"=>"TeacherEnrollment", "updated_at"=>"2014-11-11T22:11:19Z", "user_id"=>1, "enrollment_state"=>"active", "role"=>"TeacherEnrollment", "role_id"=>4, "last_activity_at"=>"2014-11-24T16:48:54Z", "total_activity_time"=>63682, "sis_import_id"=>nil, "sis_course_id"=>"DOCSTUCOMM", "course_integration_id"=>nil, "sis_section_id"=>nil, "section_integration_id"=>nil, "html_url"=>"http://localhost:3000/courses/1/users/1", "user"=>{"id"=>1, "name"=>"teacher@test.com", "sortable_name"=>"teacher@test.com", "short_name"=>"teacher@test.com", "login_id"=>"teacher@test.com"}}
+      attributes = {"associated_user_id"=>nil, "course_id"=>1, "course_section_id"=>1, "created_at"=>"2014-11-07T21:17:54Z", "end_at"=>end_time, "id"=>1, "limit_privileges_to_course_section"=>false, "root_account_id"=>1, "start_at"=>start_time, "enrollment_type"=>"TeacherEnrollment", "updated_at"=>"2014-11-11T22:11:19Z", "user_id"=>1, "enrollment_state"=>"active", "role"=>"TeacherEnrollment", "role_id"=>4, "last_activity_at"=>"2014-11-24T16:48:54Z", "total_activity_time"=>63682, "sis_import_id"=>nil, "sis_course_id"=>"DOCSTUCOMM", "course_integration_id"=>nil, "sis_section_id"=>nil, "section_integration_id"=>nil, "html_url"=>"http://localhost:3000/courses/1/users/1", "user"=>{"id"=>1, "name"=>"teacher@test.com", "sortable_name"=>"teacher@test.com", "short_name"=>"teacher@test.com", "login_id"=>"teacher@test.com"}}
       record = CoalescingPanda::Enrollment.new
-      expect(worker.standard_attributes(record, attributes)).to eq({"created_at"=>"2014-11-07T21:17:54Z", "end_at"=>end_time, "start_at"=>start_time, "updated_at"=>"2014-11-11T22:11:19Z"})
+      expect(worker.standard_attributes(record, attributes)).to eq({"created_at"=>"2014-11-07T21:17:54Z", "end_at"=>end_time, "start_at"=>start_time, "enrollment_type"=>"TeacherEnrollment", "updated_at"=>"2014-11-11T22:11:19Z"})
     end
 
     it 'returns assignment attributes' do

@@ -13,6 +13,8 @@ module CoalescingPanda
 
     serialize :settings
 
+    validates :canvas_account_id, presence: true
+
     def validate_nonce(nonce, timestamp)
       cleanup_nonce
       if timestamp > 15.minutes.ago
