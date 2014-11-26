@@ -1,22 +1,25 @@
-class CanvasBatchProgress
-  constructor: ->
+window.CoalescingPanda or= {}
+
+window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
+  constructor: (successCallback, errorCallback)  ->
     batch = $('#batch-progress').data('batch')
     url = $('#batch-progress').data('url')
     window.clearPath = $('#batch-progress').data('clear-path')
     if batch && batch.status != "Completed" || batch.status != "Error"
-      window.batchInterval = setInterval(getBatchStatus, 3000, batch.id, url)
+      window.batchInterval = setInterval(getBatchStatus, 3000, batch.id, url, successCallback, errorCallback)
 
-  getBatchStatus = (id, url) ->
+  getBatchStatus = (id, url, successCallback, errorCallback) ->
     $.ajax
       url: url
       success: (data) ->
         $('#batch-progress').html(data)
         batch = $('#batch-info').data('batch')
-        if batch.status == "Completed" || batch.status == "Error"
-          clearInterval(window.batchInterval)
-          $('#batch-progress').html(data)
-          clearBatchFromSession(batch.id)
-          window.location.reload() if $('#batch-container').data('refresh')
+        if batch.status == "Completed"
+          clearIntervalAndBatch(data, batch)
+          successCallback() if successCallback != undefined
+        else if batch.status == 'Error'
+          clearIntervalAndBatch(data, batch)
+          errorCallback() if errorCallback != undefined
 
       error: (message) ->
         $('#batch-progress').html('Batch status request failed')
@@ -34,8 +37,11 @@ class CanvasBatchProgress
 
   delay = (ms, func) -> setTimeout func, ms
 
-$ ->
-  new CanvasBatchProgress() if $('#batch-progress').length > 0
+  clearIntervalAndBatch = (data, batch) ->
+    clearInterval(window.batchInterval)
+    $('#batch-progress').html(data)
+    clearBatchFromSession(batch.id)
 
+$ ->
   $("#batch-container").unbind().bind "batchStarted", (event, data) ->
     new CanvasBatchProgress()

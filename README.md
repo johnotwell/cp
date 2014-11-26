@@ -105,8 +105,14 @@ This partial requires a method called current_batch. You can add this by adding 
 
     helper CoalescingPanda::Engine.helpers
 
-When session[:canvas_batch_id] is set, javascript will ping the canvas batch controller for the status of your batch and display the results in a progress bar.
-NOTE: the session variable must be set before the server returns your template. Meaning if you update your view via ajax you would have to manually kick off the javascript that updates the progress bar. Here is an example
+To enable progress bar and batch success / failure callbacks:
+
+  the session[:canvas_batch_id] session variable must be set before the server returns your template.
+  then you would do something like this to get the progress and callbacks to work (Callbacks are optional)
+  new window.CoalescingPanda.CanvasBatchProgress(successCallback, errorCallback) if $('#batch-progress').length > 0
+
+### Ajax Gotchas
+if you update your view via ajax you would have to manually kick off the javascript that updates the progress bar. Here is an example
 
 In your controller you must respond_to js
 
