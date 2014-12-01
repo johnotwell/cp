@@ -31,15 +31,15 @@ RSpec.describe CoalescingPanda::Enrollment, :type => :model do
     it 'should be unique to a user and section' do
       user = FactoryGirl.create(:user)
       section = FactoryGirl.create(:section)
-      enrollment = FactoryGirl.create(:enrollment, user: user, section: section, canvas_enrollment_id: "1", enrollment_type: "StudentEnrollment")
-      expect { FactoryGirl.create(:enrollment, user: user, section: section, canvas_enrollment_id: "1", enrollment_type: "StudentEnrollment") }.to raise_error ActiveRecord::RecordNotUnique
+      enrollment = FactoryGirl.create(:enrollment, user: user, section: section, enrollment_type: "StudentEnrollment")
+      expect { FactoryGirl.create(:enrollment, user: user, section: section, enrollment_type: "StudentEnrollment") }.to raise_error ActiveRecord::RecordNotUnique
     end
 
     it 'should not be unique with a different enrollment type' do
       user = FactoryGirl.create(:user)
       section = FactoryGirl.create(:section)
-      enrollment = FactoryGirl.create(:enrollment, user: user, section: section, canvas_enrollment_id: "1", enrollment_type: "StudentEnrollment")
-      expect { FactoryGirl.create(:enrollment, user: user, section: section, canvas_enrollment_id: "2", enrollment_type: "TeacherEnrollment") }.not_to raise_error
+      enrollment = FactoryGirl.create(:enrollment, user: user, section: section, enrollment_type: "StudentEnrollment")
+      expect { FactoryGirl.create(:enrollment, user: user, section: section, enrollment_type: "TeacherEnrollment") }.not_to raise_error
     end
 
     it "should be valid with valid data" do

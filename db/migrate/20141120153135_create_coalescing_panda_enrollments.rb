@@ -13,7 +13,7 @@ class CreateCoalescingPandaEnrollments < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index :coalescing_panda_enrollments, [:coalescing_panda_user_id, :coalescing_panda_section_id, :enrollment_type], name: :index_enrollments_user_and_assignment, unique: true
+    add_index :coalescing_panda_enrollments, [:coalescing_panda_user_id, :coalescing_panda_section_id, :enrollment_type], name: :index_enrollments_user_and_section, unique: true
     add_index :coalescing_panda_enrollments, :sis_id
   end
 end
