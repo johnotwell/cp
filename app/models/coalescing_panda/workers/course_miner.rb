@@ -81,7 +81,7 @@ class CoalescingPanda::Workers::CourseMiner
         create_associations(record, model_key, values)
         record.save(validate: false)
       rescue => e
-        logger.info("#{model} not created: Batch: #{batch.id}, Message: #{e.message}, values: #{values}")
+        Rails.logger.error("#{model} not created: Batch: #{batch.id}, Message: #{e.message}, values: #{values}")
       end
     end
   end
