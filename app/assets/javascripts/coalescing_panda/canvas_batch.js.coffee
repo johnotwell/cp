@@ -30,12 +30,7 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
       url: window.clearPath
       type: 'POST'
       success: (data) ->
-        delay 3000, ->
-          $('#batch-progress').fadeOut(1000)
-          $('#batch-progress').html("")
-          $('#batch-progress').show()
-
-  delay = (ms, func) -> setTimeout func, ms
+        # Don't need to anything
 
   clearIntervalAndBatch = (data, batch) ->
     clearInterval(window.batchInterval)

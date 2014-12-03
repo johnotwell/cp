@@ -30,7 +30,7 @@ module CoalescingPanda
           #delete the added params so the original oauth sig still works
           @lti_params.delete('action')
           @lti_params.delete('controller')
-          render 'coalescing_panda/oauth2/oauth2'
+          render 'coalescing_panda/oauth2/oauth2', layout: 'coalescing_panda/application'
         end
       end
     end
