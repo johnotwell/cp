@@ -3,7 +3,7 @@ class CreateCoalescingPandaAssignments < ActiveRecord::Migration
     create_table :coalescing_panda_assignments do |t|
       t.belongs_to :coalescing_panda_course, null: false
       t.string :name
-      t.string :description
+      t.text :description
       t.string :canvas_assignment_id, null: false
       t.string :workflow_state
       t.float :points_possible
