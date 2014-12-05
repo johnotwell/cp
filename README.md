@@ -111,6 +111,9 @@ To enable progress bar and batch success / failure callbacks:
   then you would do something like this to get the progress and callbacks to work (Callbacks are optional)
   new window.CoalescingPanda.CanvasBatchProgress(successCallback, errorCallback) if $('#batch-progress').length > 0
 
+If you would like to customize the flash messages simply pass a javascript object as the third param
+    new window.CoalescingPanda.CanvasBatchProgress(successCallback, errorCallback, {queued: "example queued message", completed: "example completed message", started: "example started message", error: "example error message"})
+
 ### Ajax Gotchas
 if you update your view via ajax you would have to manually kick off the javascript that updates the progress bar. Here is an example
 

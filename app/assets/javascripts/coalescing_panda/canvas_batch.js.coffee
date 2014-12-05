@@ -1,7 +1,9 @@
 window.CoalescingPanda or= {}
 
 window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
-  constructor: (successCallback, errorCallback)  ->
+  constructor: (successCallback, errorCallback, messages)  ->
+    window.messages = messages if messages != undefined
+    setFlashMessages()
     batch = $('#batch-progress').data('batch')
     url = $('#batch-progress').data('url')
     window.clearPath = $('#batch-progress').data('clear-path')
@@ -13,6 +15,7 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
       url: url
       success: (data) ->
         $('#batch-progress').html(data)
+        setFlashMessages()
         batch = $('#batch-info').data('batch')
         if batch.status == "Completed"
           clearIntervalAndBatch(data, batch)
@@ -30,12 +33,18 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
       url: window.clearPath
       type: 'POST'
       success: (data) ->
-        # Don't need to anything
+        # Don't need to do anything
 
   clearIntervalAndBatch = (data, batch) ->
     clearInterval(window.batchInterval)
     $('#batch-progress').html(data)
+    setFlashMessages()
     clearBatchFromSession(batch.id)
+
+  setFlashMessages = ->
+    if window.messages != undefined
+      for key of window.messages
+        $(".batch-message-#{key}").text("#{window.messages[key]}")
 
 $ ->
   $("#batch-container").unbind().bind "batchStarted", (event, data) ->
