@@ -7,5 +7,6 @@ module CoalescingPanda
 
     validates :coalescing_panda_course_id, presence: true
     validates :canvas_assignment_id, presence: true
+    serialize :submission_types
   end
 end
