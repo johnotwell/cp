@@ -19,6 +19,16 @@ RSpec.describe CoalescingPanda::Course, :type => :model do
       expect(CoalescingPanda::Course.reflect_on_association(:sections).macro).to eql(:has_many)
     end
 
+    it 'should have many groups' do
+      expect(CoalescingPanda::Course.reflect_on_association(:groups)).to_not be_nil
+      expect(CoalescingPanda::Course.reflect_on_association(:groups).macro).to eql(:has_many)
+    end
+
+    it 'should have many group_memberships' do
+      expect(CoalescingPanda::Course.reflect_on_association(:group_memberships)).to_not be_nil
+      expect(CoalescingPanda::Course.reflect_on_association(:group_memberships).macro).to eql(:has_many)
+    end
+
     it 'should have many assignments' do
       expect(CoalescingPanda::Course.reflect_on_association(:assignments)).to_not be_nil
       expect(CoalescingPanda::Course.reflect_on_association(:assignments).macro).to eql(:has_many)

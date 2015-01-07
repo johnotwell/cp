@@ -1,5 +1,5 @@
 class CoalescingPanda::Workers::CourseMiner
-  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignments, :submissions] #ORDER MATTERS!!
+  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
 
   attr_accessor :options, :account, :course, :batch
 
@@ -42,6 +42,10 @@ class CoalescingPanda::Workers::CourseMiner
       :assignments
     when :submissions
       :get_course_submissions
+    when :groups
+      :course_groups
+    when :group_memberships
+      :list_group_memberships
     else
       raise "API METHOD DOESN'T EXIST"
     end
@@ -56,6 +60,14 @@ class CoalescingPanda::Workers::CourseMiner
         end
       end
       create_records(collection, model_key)
+    elsif model_key == :group_memberships
+      collection = []
+      course.groups.each do |group|
+        api_client.list_group_memberships(group.canvas_group_id).all_pages!.each do |group_memberships|
+          collection << group_memberships
+        end
+      end
+      create_records(collection, model_key)
     else
       collection = api_client.send(method, course.canvas_course_id).all_pages!
       create_records(collection, model_key)
@@ -63,7 +75,7 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def create_records(collection, model_key)
-    model = "CoalescingPanda::#{model_key.to_s.singularize.titleize}".constantize
+    model = "CoalescingPanda::#{model_key.to_s.singularize.classify}".constantize
     collection.each do |values|
       begin
         canvas_id_key = "canvas_#{model_key.to_s.singularize}_id"
@@ -109,6 +121,11 @@ class CoalescingPanda::Workers::CourseMiner
     when :submissions
       record.user = account.users.where(canvas_user_id: values['user_id'].to_s).first
       record.assignment = course.assignments.where(canvas_assignment_id: values['assignment_id'].to_s).first
+    when :group
+      record.context = course
+    when :group_memberships
+      record.group = course.groups.find_by(canvas_group_id: values['group_id'].to_s)
+      record.user = account.users.find_by(canvas_user_id: values['user_id'].to_s)
     end
   end
 end

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
   let(:course) { FactoryGirl.create(:course) }
-  let(:worker) { CoalescingPanda::Workers::CourseMiner.new(course, [:sections, :users, :enrollments, :assignments, :submissions]) }
+  let(:worker) { CoalescingPanda::Workers::CourseMiner.new(course, [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships]) }
   let(:users_response) {[
     {"id"=>1, "name"=>"teacher@test.com", "sortable_name"=>"teacher@test.com", "short_name"=>"teacher@test.com", "login_id"=>"teacher@test.com"},
     {"id"=>2, "name"=>"student1@test.com", "sortable_name"=>"student1@test.com", "short_name"=>"student1@test.com", "login_id"=>"student1@test.com"},
@@ -28,6 +28,14 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"90", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:21Z", "grader_id"=>1, "id"=>4, "score"=>90, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>3, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/3?preview=1"},
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"80", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:17Z", "grader_id"=>1, "id"=>2, "score"=>80, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>2, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/2?preview=1"}
   ]}
+  let(:groups_response){[
+    {"description"=> nil, "group_category_id"=> 3, "id"=> 4, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 1", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> nil},
+    {"description"=> nil, "group_category_id"=> 3, "id"=> 5, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 2", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> nil}
+  ]}
+  let(:membership_response){[
+    {"group_id"=> 4, "id"=> 13, "moderator"=> false, "user_id"=> 2, "workflow_state"=> "accepted"},
+    {"group_id"=> 4, "id"=> 14, "moderator"=> false, "user_id"=> 3, "workflow_state"=> "accepted"}
+  ]}
 
   before do
     Bearcat::Client.any_instance.stub(:list_course_users) { double(Bearcat::ApiArray, :all_pages! => users_response) }
@@ -37,13 +45,15 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     Bearcat::Client.any_instance.stub(:get_course_submissions) { double(Bearcat::ApiArray, :all_pages! => {}) }
     Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "1") { double(Bearcat::ApiArray, :all_pages! => submissions_response1) }
     Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "2") { double(Bearcat::ApiArray, :all_pages! => submissions_response2) }
+    Bearcat::Client.any_instance.stub(:course_groups) { double(Bearcat::ApiArray, :all_pages! => groups_response) }
+    Bearcat::Client.any_instance.stub(:list_group_memberships) { double(Bearcat::ApiArray, :all_pages! => membership_response) }
   end
 
   describe '#initialize' do
     it 'should set instance variables a user' do
       expect(worker.course).to eq course
       expect(worker.account).to eq course.account
-      expect(worker.options).to eq [:sections, :users, :enrollments, :assignments, :submissions]
+      expect(worker.options).to eq [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships]
       expect(worker.batch).to eq CoalescingPanda::CanvasBatch.last
     end
   end
@@ -68,6 +78,8 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       expect(worker.api_method(:enrollments)).to eq :course_enrollments
       expect(worker.api_method(:assignments)).to eq :assignments
       expect(worker.api_method(:submissions)).to eq :get_course_submissions
+      expect(worker.api_method(:groups)).to eq :course_groups
+      expect(worker.api_method(:group_memberships)).to eq :list_group_memberships
     end
 
     it 'raises and error if method doesnt exist' do
@@ -111,6 +123,18 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       worker.create_records(submissions_response, :submissions)
       expect(CoalescingPanda::Submission.count).to eq 4
     end
+
+    it 'creates groups' do
+      CoalescingPanda::Group.destroy_all
+      worker.create_records(groups_response, :groups)
+      expect(CoalescingPanda::Group.count).to eq 2
+    end
+
+    it 'creates group memberships' do
+      CoalescingPanda::GroupMembership.destroy_all
+      worker.create_records(membership_response, :group_memberships)
+      expect(CoalescingPanda::GroupMembership.count).to eq 2
+    end
   end
 
   describe '#standard_attributes' do
@@ -138,13 +162,25 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     it 'returns assignment attributes' do
       attributes = {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>end_time, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>nil, "id"=>1, "lock_at"=>start_time, "peer_reviews"=>false, "points_possible"=>100, "position"=>1, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "course_id"=>1, "name"=>"Gimme your name", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/1", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false}
       record = CoalescingPanda::Assignment.new
-      expect(worker.standard_attributes(record, attributes)).to eq({"created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>end_time, "lock_at"=>start_time, "points_possible"=>100, "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "name"=>"Gimme your name"})
+      expect(worker.standard_attributes(record, attributes)).to eq({"created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>end_time, "grade_group_students_individually" => false, "group_category_id" => nil, "lock_at"=>start_time, "points_possible"=>100, "published" => true, "submission_types" => ["online_text_entry"], "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "name"=>"Gimme your name"})
     end
 
     it 'returns submission attributes' do
       attributes = {"assignment_id"=>1, "attempt"=>nil, "body"=>nil, "grade"=>"70", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:19Z", "grader_id"=>1, "id"=>3, "score"=>70, "submission_type"=>nil, "submitted_at"=>nil, "url"=>"http://test.com", "user_id"=>3, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/1/submissions/3?preview=1"}
       record = CoalescingPanda::Submission.new
       expect(worker.standard_attributes(record, attributes)).to eq({"grade"=>"70", "score"=>70, "submitted_at"=>nil, "url"=>"http://test.com", "workflow_state"=>"graded"})
+    end
+
+    it 'returns group attributes' do
+      attributes = {"description"=> nil,"group_category_id"=> 3,"id"=> 4,"is_public"=> false,"join_level"=> "invitation_only","max_membership"=> 5,"name"=> "Student Group 1","members_count"=> 2,"storage_quota_mb"=> 50,"context_type"=> "Course","course_id"=> 3709,"avatar_url"=> nil,"role"=> nil,"leader"=> nil}
+      record = CoalescingPanda::Group.new
+      expect(worker.standard_attributes(record, attributes)).to eq({"description" => nil , "group_category_id" => 3, "name" => "Student Group 1", "members_count" => 2, "context_type" => 'Course'})
+    end
+
+    it 'returns group membership attributes' do
+      attributes = {"group_id"=> 4,"id"=> 13,"moderator"=> false,"user_id"=> 2,"workflow_state"=> "accepted"}
+      record = CoalescingPanda::GroupMembership.new
+      expect(worker.standard_attributes(record, attributes)).to eq({"workflow_state" => "accepted"})
     end
   end
 

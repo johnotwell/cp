@@ -11,13 +11,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141124160857) do
+ActiveRecord::Schema.define(version: 20150107205413) do
 
   create_table "coalescing_panda_assignments", force: true do |t|
-    t.integer  "coalescing_panda_course_id", null: false
+    t.integer  "coalescing_panda_course_id",        null: false
     t.string   "name"
-    t.string   "description"
-    t.string   "canvas_assignment_id",       null: false
+    t.text     "description"
+    t.string   "canvas_assignment_id",              null: false
     t.string   "workflow_state"
     t.float    "points_possible"
     t.datetime "due_at"
@@ -25,6 +25,10 @@ ActiveRecord::Schema.define(version: 20141124160857) do
     t.datetime "lock_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "submission_types"
+    t.integer  "group_category_id"
+    t.boolean  "grade_group_students_individually"
+    t.boolean  "published"
   end
 
   add_index "coalescing_panda_assignments", ["coalescing_panda_course_id", "canvas_assignment_id"], name: "index_assignments_course", unique: true
@@ -76,8 +80,29 @@ ActiveRecord::Schema.define(version: 20141124160857) do
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id", "coalescing_panda_section_id", "enrollment_type"], name: "index_enrollments_user_and_assignment", unique: true
+  add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id", "coalescing_panda_section_id", "enrollment_type"], name: "index_enrollments_user_and_section", unique: true
   add_index "coalescing_panda_enrollments", ["sis_id"], name: "index_coalescing_panda_enrollments_on_sis_id"
+
+  create_table "coalescing_panda_group_memberships", force: true do |t|
+    t.integer  "coalescing_panda_group_id"
+    t.integer  "coalescing_panda_user_id"
+    t.string   "canvas_group_membership_id"
+    t.string   "workflow_state"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "coalescing_panda_groups", force: true do |t|
+    t.integer  "context_id"
+    t.string   "context_type"
+    t.string   "description"
+    t.string   "group_category_id"
+    t.string   "canvas_group_id"
+    t.string   "name"
+    t.integer  "members_count"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "coalescing_panda_lti_accounts", force: true do |t|
     t.string   "name"
