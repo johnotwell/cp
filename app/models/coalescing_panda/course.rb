@@ -9,6 +9,7 @@ module CoalescingPanda
     has_many :users, through: :sections, source: :users, class_name: 'CoalescingPanda::User'
     has_many :groups, :as => :context, class_name: 'CoalescingPanda::Group'
     has_many :group_memberships, through: :groups, source: :group_memberships, class_name: 'CoalescingPanda::GroupMembership'
+    has_many :canvas_batches, as: :context
 
     validates :coalescing_panda_lti_account_id, presence: true
     validates :canvas_course_id, presence: true

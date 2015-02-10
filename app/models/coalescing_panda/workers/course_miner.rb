@@ -7,7 +7,7 @@ class CoalescingPanda::Workers::CourseMiner
     @course = course
     @account = course.account
     @options = options
-    @batch = CoalescingPanda::CanvasBatch.create(status: "Queued")
+    @batch = CoalescingPanda::CanvasBatch.create(context: course, status: "Queued")
   end
 
   def api_client

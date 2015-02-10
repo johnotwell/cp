@@ -1,3 +1,3 @@
 module CoalescingPanda
-  VERSION = '3.1.14'
+  VERSION = '3.2.0'
 end
