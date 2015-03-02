@@ -105,8 +105,10 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def sis_id(model_key, values)
-    return values['sis_source_id'] if values.has_key?('sis_source_id')
+    return values['sis_course_id']  if model_key == :courses
+    return values['sis_user_id'] if model_key == :users
     return values['sis_section_id'] if model_key == :sections
+    return values['sis_source_id'] if values.has_key?('sis_source_id')
   end
 
   def create_associations(record, model_key, values)
