@@ -11,14 +11,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150218185536) do
+ActiveRecord::Schema.define(version: 20150210180516) do
 
   create_table "coalescing_panda_assignments", force: true do |t|
-    t.integer  "coalescing_panda_course_id"
+    t.integer  "coalescing_panda_course_id",        null: false
     t.string   "name"
-    t.string   "description"
-    t.string   "canvas_assignment_id"
-    t.string   "sis_id"
+    t.text     "description"
+    t.string   "canvas_assignment_id",              null: false
     t.string   "workflow_state"
     t.float    "points_possible"
     t.datetime "due_at"
@@ -32,10 +31,7 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.boolean  "published"
   end
 
-  add_index "coalescing_panda_assignments", ["canvas_assignment_id"], name: "index_coalescing_panda_assignments_on_canvas_assignment_id"
-  add_index "coalescing_panda_assignments", ["coalescing_panda_course_id"], name: "index_assignment_course_id"
-  add_index "coalescing_panda_assignments", ["coalescing_panda_course_id"], name: "index_assignments_course"
-  add_index "coalescing_panda_assignments", ["sis_id"], name: "index_coalescing_panda_assignments_on_sis_id"
+  add_index "coalescing_panda_assignments", ["coalescing_panda_course_id", "canvas_assignment_id"], name: "index_assignments_course", unique: true
 
   create_table "coalescing_panda_canvas_api_auths", force: true do |t|
     t.string   "user_id"
@@ -51,15 +47,15 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.text     "message"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "context_id"
+    t.integer  "context_id"
     t.string   "context_type"
   end
 
   create_table "coalescing_panda_courses", force: true do |t|
-    t.integer  "coalescing_panda_lti_account_id"
+    t.integer  "coalescing_panda_lti_account_id", null: false
     t.integer  "coalescing_panda_term_id"
     t.string   "name"
-    t.string   "canvas_course_id"
+    t.string   "canvas_course_id",                null: false
     t.string   "sis_id"
     t.datetime "start_at"
     t.datetime "conclude_at"
@@ -69,29 +65,24 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_courses", ["canvas_course_id"], name: "index_coalescing_panda_courses_on_canvas_course_id"
-  add_index "coalescing_panda_courses", ["coalescing_panda_lti_account_id"], name: "index_courses_account"
-  add_index "coalescing_panda_courses", ["coalescing_panda_lti_account_id"], name: "index_courses_lti_account_id"
-  add_index "coalescing_panda_courses", ["coalescing_panda_term_id"], name: "index_courses_term"
-  add_index "coalescing_panda_courses", ["coalescing_panda_term_id"], name: "index_courses_term_id"
+  add_index "coalescing_panda_courses", ["coalescing_panda_lti_account_id", "canvas_course_id"], name: "index_courses_account", unique: true
+  add_index "coalescing_panda_courses", ["coalescing_panda_term_id", "canvas_course_id"], name: "index_courses_term", unique: true
   add_index "coalescing_panda_courses", ["sis_id"], name: "index_coalescing_panda_courses_on_sis_id"
 
   create_table "coalescing_panda_enrollments", force: true do |t|
-    t.integer  "coalescing_panda_user_id"
-    t.integer  "coalescing_panda_section_id"
+    t.integer  "coalescing_panda_user_id",    null: false
+    t.integer  "coalescing_panda_section_id", null: false
     t.string   "workflow_state"
     t.string   "sis_id"
-    t.string   "canvas_enrollment_id"
+    t.string   "canvas_enrollment_id",        null: false
+    t.string   "enrollment_type"
     t.datetime "start_at"
     t.datetime "end_at"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_enrollments", ["canvas_enrollment_id"], name: "index_coalescing_panda_enrollments_on_canvas_enrollment_id"
-  add_index "coalescing_panda_enrollments", ["coalescing_panda_section_id"], name: "index_enrollments_section_id"
-  add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id", "coalescing_panda_section_id"], name: "index_enrollments_user_and_assignment"
-  add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id"], name: "index_enrollments_user_id"
+  add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id", "coalescing_panda_section_id", "enrollment_type"], name: "index_enrollments_user_and_section", unique: true
   add_index "coalescing_panda_enrollments", ["sis_id"], name: "index_coalescing_panda_enrollments_on_sis_id"
 
   create_table "coalescing_panda_group_memberships", force: true do |t|
@@ -102,9 +93,6 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "coalescing_panda_group_memberships", ["coalescing_panda_group_id"], name: "index_memberships_group_id"
-  add_index "coalescing_panda_group_memberships", ["coalescing_panda_user_id"], name: "index_memberships_user_id"
 
   create_table "coalescing_panda_groups", force: true do |t|
     t.integer  "context_id"
@@ -124,10 +112,10 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.string   "secret"
     t.string   "oauth2_client_id"
     t.string   "oauth2_client_key"
+    t.string   "canvas_account_id"
+    t.text     "settings"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "settings"
-    t.string   "canvas_account_id"
   end
 
   create_table "coalescing_panda_lti_nonces", force: true do |t|
@@ -137,9 +125,9 @@ ActiveRecord::Schema.define(version: 20150218185536) do
   end
 
   create_table "coalescing_panda_sections", force: true do |t|
-    t.integer  "coalescing_panda_course_id"
+    t.integer  "coalescing_panda_course_id", null: false
     t.string   "name"
-    t.string   "canvas_section_id"
+    t.string   "canvas_section_id",          null: false
     t.string   "sis_id"
     t.string   "workflow_state"
     t.datetime "start_at"
@@ -148,9 +136,7 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_sections", ["canvas_section_id"], name: "index_coalescing_panda_sections_on_canvas_section_id"
-  add_index "coalescing_panda_sections", ["coalescing_panda_course_id"], name: "index_coalescing_panda_sections_on_coalescing_panda_course_id"
-  add_index "coalescing_panda_sections", ["coalescing_panda_course_id"], name: "index_sections_course_id"
+  add_index "coalescing_panda_sections", ["coalescing_panda_course_id", "canvas_section_id"], name: "index_sections_course", unique: true
   add_index "coalescing_panda_sections", ["sis_id"], name: "index_coalescing_panda_sections_on_sis_id"
 
   create_table "coalescing_panda_sessions", force: true do |t|
@@ -161,29 +147,27 @@ ActiveRecord::Schema.define(version: 20150218185536) do
   end
 
   create_table "coalescing_panda_submissions", force: true do |t|
-    t.integer  "coalescing_panda_user_id"
-    t.integer  "coalescing_panda_assignment_id"
+    t.integer  "coalescing_panda_user_id",       null: false
+    t.integer  "coalescing_panda_assignment_id", null: false
     t.string   "url"
     t.string   "grade"
     t.string   "score"
     t.datetime "submitted_at"
     t.string   "workflow_state"
-    t.string   "canvas_submission_id"
+    t.string   "canvas_submission_id",           null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   add_index "coalescing_panda_submissions", ["canvas_submission_id"], name: "index_coalescing_panda_submissions_on_canvas_submission_id"
-  add_index "coalescing_panda_submissions", ["coalescing_panda_assignment_id"], name: "index_submissions_assignment_id"
-  add_index "coalescing_panda_submissions", ["coalescing_panda_user_id", "coalescing_panda_assignment_id"], name: "index_submissions_user_and_assignment"
-  add_index "coalescing_panda_submissions", ["coalescing_panda_user_id"], name: "index_submissions_user_id"
+  add_index "coalescing_panda_submissions", ["coalescing_panda_user_id", "coalescing_panda_assignment_id", "canvas_submission_id"], name: "index_submissions_user_and_assignment", unique: true
 
   create_table "coalescing_panda_terms", force: true do |t|
-    t.integer  "coalescing_panda_lti_account_id"
+    t.integer  "coalescing_panda_lti_account_id", null: false
     t.string   "name"
     t.string   "code"
     t.string   "sis_id"
-    t.string   "canvas_term_id"
+    t.string   "canvas_term_id",                  null: false
     t.datetime "start_at"
     t.datetime "end_at"
     t.string   "workflow_state"
@@ -191,25 +175,22 @@ ActiveRecord::Schema.define(version: 20150218185536) do
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_terms", ["canvas_term_id"], name: "index_coalescing_panda_terms_on_canvas_term_id"
-  add_index "coalescing_panda_terms", ["coalescing_panda_lti_account_id"], name: "index_terms_lti_account_id"
+  add_index "coalescing_panda_terms", ["canvas_term_id", "coalescing_panda_lti_account_id"], name: "index_terms_account", unique: true
   add_index "coalescing_panda_terms", ["sis_id"], name: "index_coalescing_panda_terms_on_sis_id"
 
   create_table "coalescing_panda_users", force: true do |t|
-    t.integer  "coalescing_panda_lti_account_id"
+    t.integer  "coalescing_panda_lti_account_id", null: false
     t.string   "name"
     t.string   "email"
     t.string   "roles"
     t.string   "workflow_state"
     t.string   "sis_id"
-    t.string   "canvas_user_id"
+    t.string   "canvas_user_id",                  null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "coalescing_panda_users", ["canvas_user_id"], name: "index_coalescing_panda_users_on_canvas_user_id"
-  add_index "coalescing_panda_users", ["coalescing_panda_lti_account_id"], name: "index_users_account"
-  add_index "coalescing_panda_users", ["coalescing_panda_lti_account_id"], name: "index_users_lti_account_id"
+  add_index "coalescing_panda_users", ["coalescing_panda_lti_account_id", "canvas_user_id"], name: "index_users_account", unique: true
   add_index "coalescing_panda_users", ["sis_id"], name: "index_coalescing_panda_users_on_sis_id"
 
   create_table "delayed_jobs", force: true do |t|

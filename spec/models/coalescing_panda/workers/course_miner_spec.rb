@@ -71,68 +71,54 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     end
   end
 
-  describe '#api_method' do
-    it 'returns the correct api method' do
-      expect(worker.api_method(:users)).to eq :list_course_users
-      expect(worker.api_method(:sections)).to eq :course_sections
-      expect(worker.api_method(:enrollments)).to eq :course_enrollments
-      expect(worker.api_method(:assignments)).to eq :assignments
-      expect(worker.api_method(:submissions)).to eq :get_course_submissions
-      expect(worker.api_method(:groups)).to eq :course_groups
-      expect(worker.api_method(:group_memberships)).to eq :list_group_memberships
-    end
-
-    it 'raises and error if method doesnt exist' do
-      expect{ worker.api_method(:not_a_real_method) }.to raise_error
-    end
-  end
-
   describe '#create_records' do
     it 'creates sections' do
       CoalescingPanda::Section.destroy_all
-      worker.create_records(sections_response, :sections)
+      worker.sync_sections(sections_response)
       expect(CoalescingPanda::Section.count).to eq 1
     end
 
     it 'creates users' do
       CoalescingPanda::User.destroy_all
-      worker.create_records(users_response, :users)
+      worker.sync_users(users_response)
       expect(CoalescingPanda::User.count).to eq 3
     end
 
     it 'creates enrollments' do
       CoalescingPanda::Enrollment.destroy_all
-      worker.create_records(sections_response, :sections)
-      worker.create_records(users_response, :users)
-      worker.create_records(enrollments_response, :enrollments)
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
       expect(CoalescingPanda::Enrollment.count).to eq 3
       expect(CoalescingPanda::Enrollment.last.workflow_state).to eq "active"
     end
 
     it 'creates assignments' do
       CoalescingPanda::Assignment.destroy_all
-      worker.create_records(assignments_response, :assignments)
+      worker.sync_assignments(assignments_response)
       expect(CoalescingPanda::Assignment.count).to eq 2
     end
 
     it 'creates submissions' do
       CoalescingPanda::Submission.destroy_all
       submissions_response = submissions_response1 + submissions_response2
-      worker.create_records(users_response, :users)
-      worker.create_records(assignments_response, :assignments)
-      worker.create_records(submissions_response, :submissions)
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      worker.sync_assignments(assignments_response)
+      worker.sync_submissions(submissions_response)
       expect(CoalescingPanda::Submission.count).to eq 4
     end
 
     it 'creates groups' do
       CoalescingPanda::Group.destroy_all
-      worker.create_records(groups_response, :groups)
+      worker.sync_groups(groups_response)
       expect(CoalescingPanda::Group.count).to eq 2
     end
 
     it 'creates group memberships' do
       CoalescingPanda::GroupMembership.destroy_all
-      worker.create_records(membership_response, :group_memberships)
+      worker.sync_group_memberships(membership_response)
       expect(CoalescingPanda::GroupMembership.count).to eq 2
     end
   end
@@ -181,56 +167,6 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       attributes = {"group_id"=> 4,"id"=> 13,"moderator"=> false,"user_id"=> 2,"workflow_state"=> "accepted"}
       record = CoalescingPanda::GroupMembership.new
       expect(worker.standard_attributes(record, attributes)).to eq({"workflow_state" => "accepted"})
-    end
-  end
-
-  describe '#sis_id' do
-    it 'returns sis_source_id if one exists' do
-      values = {"sis_source_id" => "1234"}
-      expect(worker.sis_id(:users, values)).to eq "1234"
-    end
-
-    it 'returns sis_section_id if one exists' do
-      values = {"sis_section_id" => "2345"}
-      expect(worker.sis_id(:sections, values)).to eq "2345"
-    end
-
-    it 'returns nil if no valid sis_id' do
-      values = {"not_valid_key" => "2345"}
-      expect(worker.sis_id(:sections, values)).to eq nil
-    end
-  end
-
-  describe '#create_associations' do
-    let(:user) { FactoryGirl.create(:user, account: course.account) }
-
-    it 'sets a user records account' do
-      record = CoalescingPanda::User.new
-      worker.create_associations(record, :users, {})
-      expect(record.account).to eq course.account
-    end
-
-    it 'sets an enrollments user and section' do
-      section = FactoryGirl.create(:section)
-      course.sections << section
-      record = CoalescingPanda::Enrollment.new
-      worker.create_associations(record, :enrollments, {'user_id' => user.canvas_user_id, 'course_section_id' => section.canvas_section_id})
-      expect(record.user).to eq user
-      expect(record.section).to eq section
-    end
-
-    it 'sets an assignments course' do
-      record = CoalescingPanda::Assignment.new
-      worker.create_associations(record, :assignments, {})
-      expect(record.course).to eq course
-    end
-
-    it 'sets an submissions' do
-      assignment = FactoryGirl.create(:assignment, course: course)
-      record = CoalescingPanda::Submission.new
-      worker.create_associations(record, :submissions, {'user_id' => user.canvas_user_id, 'assignment_id' => assignment.canvas_assignment_id})
-      expect(record.user).to eq user
-      expect(record.assignment).to eq assignment
     end
   end
 end
