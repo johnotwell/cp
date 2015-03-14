@@ -1,7 +1,7 @@
 class CoalescingPanda::Workers::CourseMiner
   SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
 
-  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :group_ids
+  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :group_ids, :user_ids
 
   def initialize(course, options = [])
     @course = course
@@ -12,6 +12,7 @@ class CoalescingPanda::Workers::CourseMiner
     @enrollment_ids = []
     @assignment_ids = []
     @group_ids = []
+    @user_ids = []
   end
 
   def api_client
@@ -89,17 +90,26 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def sync_users(collection)
-    collection.each do |values|
-      begin
+    begin
+      collection.each do |values|
         values['canvas_user_id'] = values["id"].to_s
         user = account.users.where(canvas_user_id: values['canvas_user_id']).first_or_initialize
         user.coalescing_panda_lti_account_id = account.id
         user.assign_attributes(standard_attributes(user, values))
         user.sis_id = values['sis_user_id'].to_s
+        user_ids << user.id
         user.save(validate: false)
-      rescue => e
-        Rails.logger.error "Error syncing users: #{e}"
       end
+      removed_users = course.users.where.not(id: user_ids)
+      removed_users.each do |user|
+        user.enrollments.each do |enrollment|
+          course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
+          enrollment.destroy
+        end
+      end
+      removed_users.destroy_all
+    rescue => e
+      Rails.logger.error "Error syncing users: #{e}"
     end
   end
 
@@ -116,7 +126,11 @@ class CoalescingPanda::Workers::CourseMiner
         enrollment.save(validate: false)
         enrollment_ids << enrollment.id
       end
-      course.enrollments.where.not(id: enrollment_ids).destroy_all
+      removed_enrollments = course.enrollments.where.not(id: enrollment_ids)
+      removed_enrollments.each do |enrollment|
+        course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
+      end
+      removed_enrollments.destroy_all
     rescue => e
       Rails.logger.error "Error syncing enrollments: #{e}"
     end
