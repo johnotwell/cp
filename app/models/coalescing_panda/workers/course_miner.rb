@@ -118,6 +118,7 @@ class CoalescingPanda::Workers::CourseMiner
         enrollment.section = course.sections.find_by(canvas_section_id: values['course_section_id'].to_s)
         enrollment.user = account.users.find_by(canvas_user_id: values['user_id'].to_s)
         values['workflow_state'] = values["enrollment_state"]
+        values['enrollment_type'] = values['type']
         enrollment.assign_attributes(standard_attributes(enrollment, values))
         enrollment.save(validate: false)
         enrollment_ids << enrollment.id
