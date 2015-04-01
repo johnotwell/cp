@@ -74,7 +74,7 @@ module CoalescingPanda
     end
 
     def lti_editor_button_response(return_type, return_params)
-      valid_return_types = [:image_url, :iframe, :url]
+      valid_return_types = [:image_url, :iframe, :url, :lti_launch_url]
       raise "invalid editor button return type #{return_type}" unless valid_return_types.include?(return_type)
       return_params[:return_type] = return_type.to_s
       return_url = "#{params['launch_presentation_return_url']}?#{return_params.to_query}"
