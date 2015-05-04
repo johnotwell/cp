@@ -15,14 +15,14 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["spec/**/*"]
 
-  s.add_dependency "rails", "~> 4.0.1"
-  s.add_dependency "bearcat", "~> 1.0.5"
+  s.add_dependency "rails", "~> 4.2.1"
+  s.add_dependency "bearcat"
   s.add_dependency "macaddr", "1.6.1"
   s.add_dependency "ims-lti"
   s.add_dependency "haml-rails"
-  s.add_dependency "sass-rails", "~> 4.0.0"
+  s.add_dependency 'sass-rails', '>= 3.2'
   s.add_dependency "jquery-rails"
-  s.add_dependency "coffee-rails", "~> 4.0.0"
+  s.add_dependency "coffee-rails"
   s.add_dependency 'p3p'
   s.add_dependency 'useragent'
   s.add_dependency 'delayed_job_active_record'
