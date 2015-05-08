@@ -7,6 +7,7 @@ RSpec.describe CoalescingPanda::Assignment, :type => :model do
     it 'should belong_to a course' do
       expect(CoalescingPanda::Assignment.reflect_on_association(:course)).to_not be_nil
       expect(CoalescingPanda::Assignment.reflect_on_association(:course).macro).to eql(:belongs_to)
+      expect(CoalescingPanda::Assignment.reflect_on_association(:assignment_group).macro).to eql(:belongs_to)
     end
 
     it 'should have many submisssions' do

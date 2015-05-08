@@ -1,7 +1,7 @@
 class CoalescingPanda::Workers::CourseMiner
-  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
+  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignment_groups, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
 
-  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :group_ids, :user_ids
+  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :assignment_group_ids, :group_ids, :user_ids
 
   def initialize(course, options = [])
     @course = course
@@ -11,6 +11,7 @@ class CoalescingPanda::Workers::CourseMiner
     @course_section_ids = []
     @enrollment_ids = []
     @assignment_ids = []
+    @assignment_group_ids = []
     @group_ids = []
     @user_ids = []
   end
@@ -37,6 +38,9 @@ class CoalescingPanda::Workers::CourseMiner
 
   def process_api_data(key)
     case key
+    when :assignment_groups
+      collection = api_client.list_assignment_groups(course.canvas_course_id).all_pages!
+      sync_assignment_groups(collection)
     when :sections
       collection = api_client.course_sections(course.canvas_course_id).all_pages!
       sync_sections(collection)
@@ -70,6 +74,21 @@ class CoalescingPanda::Workers::CourseMiner
       sync_group_memberships(collection)
     else
       raise "API METHOD DOESN'T EXIST"
+    end
+  end
+
+  def sync_assignment_groups(collection)
+    begin
+      collection.each do |values|
+        values['canvas_assignment_group_id'] = values['id'].to_s
+        assignment_group = course.assignment_groups.where(canvas_assignment_group_id: values['canvas_assignment_group_id']).first_or_initialize
+        assignment_group.assign_attributes(standard_attributes(assignment_group, values))
+        assignment_group.save(validate: false)
+        assignment_group_ids << assignment_group.id
+      end
+      course.assignment_groups.where.not(id: assigment_group_ids).destroy_all
+    rescue => e
+      Rails.logger.error "Error syncing assignment groups: #{e}"
     end
   end
 
@@ -141,6 +160,8 @@ class CoalescingPanda::Workers::CourseMiner
       collection.each do |values|
         values['canvas_assignment_id'] = values['id'].to_s
         assignment = course.assignments.where(canvas_assignment_id: values['canvas_assignment_id']).first_or_initialize
+        assignment_group = course.assignment_groups.find_by(canvas_assignment_group_id: values['assignment_group_id'])
+        assignment.coalescing_panda_assignment_group_id = assignment_group.id if assignment_group
         assignment.assign_attributes(standard_attributes(assignment, values))
         assignment.save(validate: false)
         assignment_ids << assignment.id

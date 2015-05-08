@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
   let(:course) { FactoryGirl.create(:course) }
-  let(:worker) { CoalescingPanda::Workers::CourseMiner.new(course, [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships]) }
+  let(:worker) { CoalescingPanda::Workers::CourseMiner.new(course, [:sections, :users, :enrollments, :assignments, :assignment_groups, :submissions, :groups, :group_memberships]) }
   let(:users_response) {[
     {"id"=>1, "name"=>"teacher@test.com", "sortable_name"=>"teacher@test.com", "short_name"=>"teacher@test.com", "login_id"=>"teacher@test.com"},
     {"id"=>2, "name"=>"student1@test.com", "sortable_name"=>"student1@test.com", "short_name"=>"student1@test.com", "login_id"=>"student1@test.com"},
@@ -36,6 +36,9 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"group_id"=> 4, "id"=> 13, "moderator"=> false, "user_id"=> 2, "workflow_state"=> "accepted"},
     {"group_id"=> 4, "id"=> 14, "moderator"=> false, "user_id"=> 3, "workflow_state"=> "accepted"}
   ]}
+  let(:assignment_groups_response) {[
+    {"group_weight" => 500, "id" => 3, "name" => "Assignments", "position" => 3, "rules" => {} }
+  ]}
 
   before do
     Bearcat::Client.any_instance.stub(:list_course_users) { double(Bearcat::ApiArray, :all_pages! => users_response) }
@@ -47,13 +50,14 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "2") { double(Bearcat::ApiArray, :all_pages! => submissions_response2) }
     Bearcat::Client.any_instance.stub(:course_groups) { double(Bearcat::ApiArray, :all_pages! => groups_response) }
     Bearcat::Client.any_instance.stub(:list_group_memberships) { double(Bearcat::ApiArray, :all_pages! => membership_response) }
+    Bearcat::Client.any_instance.stub(:list_assignment_groups) { double(Bearcat::ApiArray, :all_pages! => assignment_groups_response) }
   end
 
   describe '#initialize' do
     it 'should set instance variables a user' do
       expect(worker.course).to eq course
       expect(worker.account).to eq course.account
-      expect(worker.options).to eq [:sections, :users, :enrollments, :assignments, :submissions, :groups, :group_memberships]
+      expect(worker.options).to eq [:sections, :users, :enrollments, :assignments, :assignment_groups, :submissions, :groups, :group_memberships]
       expect(worker.batch).to eq CoalescingPanda::CanvasBatch.last
     end
   end
@@ -97,6 +101,13 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       CoalescingPanda::Assignment.destroy_all
       worker.sync_assignments(assignments_response)
       expect(CoalescingPanda::Assignment.count).to eq 2
+    end
+
+    it 'creates assignment groups' do
+      CoalescingPanda::AssignmentGroup.destroy_all
+      expect(CoalescingPanda::AssignmentGroup.count).to eq 0
+      worker.sync_assignment_groups(assignment_groups_response)
+       expect(CoalescingPanda::AssignmentGroup.count).to eq 1
     end
 
     it 'creates submissions' do

@@ -43,6 +43,11 @@ RSpec.describe CoalescingPanda::Course, :type => :model do
       expect(CoalescingPanda::Course.reflect_on_association(:users)).to_not be_nil
       expect(CoalescingPanda::Course.reflect_on_association(:users).macro).to eql(:has_many)
     end
+
+    it 'should have many assignment groups' do
+      expect(CoalescingPanda::Course.reflect_on_association(:assignment_groups)).to_not be_nil
+      expect(CoalescingPanda::Course.reflect_on_association(:assignment_groups).macro).to eql(:has_many)
+    end
   end
 
   context "validations" do
