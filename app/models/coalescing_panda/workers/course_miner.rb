@@ -86,7 +86,7 @@ class CoalescingPanda::Workers::CourseMiner
         assignment_group.save(validate: false)
         assignment_group_ids << assignment_group.id
       end
-      course.assignment_groups.where.not(id: assigment_group_ids).destroy_all
+      course.assignment_groups.where.not(id: assignment_group_ids).destroy_all
     rescue => e
       Rails.logger.error "Error syncing assignment groups: #{e}"
     end
