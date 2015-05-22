@@ -133,26 +133,27 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def sync_enrollments(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_enrollment_id'] = values['id'].to_s
-        enrollment = course.enrollments.where(canvas_enrollment_id: values['canvas_enrollment_id']).first_or_initialize
+        section = course.sections.find_by(canvas_section_id: values['course_section_id'].to_s)
+        enrollment = section.enrollments.where(canvas_enrollment_id: values['canvas_enrollment_id']).first_or_initialize
         enrollment.section = course.sections.find_by(canvas_section_id: values['course_section_id'].to_s)
         enrollment.user = account.users.find_by(canvas_user_id: values['user_id'].to_s)
         values['workflow_state'] = values["enrollment_state"]
         values['enrollment_type'] = values['type']
         enrollment.assign_attributes(standard_attributes(enrollment, values))
-        enrollment.save(validate: false)
+        enrollment.save!(validate: false)
         enrollment_ids << enrollment.id
+      rescue => e
+        Rails.logger.error "Error syncing enrollment: #{values} Error: #{e}"
       end
-      removed_enrollments = course.enrollments.where.not(id: enrollment_ids)
-      removed_enrollments.each do |enrollment|
-        course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
-      end
-      removed_enrollments.destroy_all
-    rescue => e
-      Rails.logger.error "Error syncing enrollments: #{e}"
     end
+    removed_enrollments = course.enrollments.where.not(id: enrollment_ids)
+    removed_enrollments.each do |enrollment|
+      course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
+    end
+    removed_enrollments.destroy_all
   end
 
   def sync_assignments(collection)
