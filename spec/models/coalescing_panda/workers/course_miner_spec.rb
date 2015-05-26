@@ -180,4 +180,18 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       expect(worker.standard_attributes(record, attributes)).to eq({"workflow_state" => "accepted"})
     end
   end
+
+  describe "#setup_batch" do
+    it 'should return a new batch if none are in progress' do
+      batch = worker.setup_batch
+      expect(batch.status).to eq 'Queued'
+    end
+
+    it 'should return a started batch if one exists' do
+      batch = worker.setup_batch
+      batch.update_attributes(status: 'Started')
+      batch = worker.setup_batch
+      expect(batch.status).to eq 'Started'
+    end
+  end
 end

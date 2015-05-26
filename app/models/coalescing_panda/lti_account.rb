@@ -6,6 +6,7 @@ module CoalescingPanda
     has_many :terms, foreign_key: :coalescing_panda_lti_account_id, class_name: 'CoalescingPanda::Term'
     has_many :courses, foreign_key: :coalescing_panda_lti_account_id, class_name: 'CoalescingPanda::Course'
     has_many :users, foreign_key: :coalescing_panda_lti_account_id, class_name: 'CoalescingPanda::User'
+    has_many :canvas_batches, foreign_key: :coalescing_panda_lti_account_id, class_name: 'CoalescingPanda::CanvasBatch'
     has_many :sections, through: :courses
     has_many :enrollments, through: :sections
     has_many :assignments, through: :courses

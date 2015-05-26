@@ -1,5 +1,7 @@
 class CoalescingPanda::Workers::CourseMiner
   SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignment_groups, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
+  COMPLETED_STATUSES = ['Completed', 'Error']
+  RUNNING_STATUSES = ['Queued', 'Started']
 
   attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :assignment_group_ids, :group_ids, :user_ids
 
@@ -7,7 +9,7 @@ class CoalescingPanda::Workers::CourseMiner
     @course = course
     @account = course.account
     @options = options
-    @batch = CoalescingPanda::CanvasBatch.create(context: course, status: "Queued")
+    @batch = setup_batch
     @course_section_ids = []
     @enrollment_ids = []
     @assignment_ids = []
@@ -16,11 +18,21 @@ class CoalescingPanda::Workers::CourseMiner
     @user_ids = []
   end
 
+  def setup_batch
+    batch = account.canvas_batches.where(context: course).first
+    if batch.present? and RUNNING_STATUSES.include?(batch.status)
+      batch
+    else
+      account.canvas_batches.create(context: course, status: "Queued")
+    end
+  end
+
   def api_client
     @api_client ||= Bearcat::Client.new(prefix: account.settings[:base_url], token: account.settings[:account_admin_api_token])
   end
 
   def start
+    return unless batch.status == 'Queued'
     begin
       batch.update_attributes(status: "Started", percent_complete: 0)
       SUPPORTED_MODELS.each_with_index do |model_key, index|
