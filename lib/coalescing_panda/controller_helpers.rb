@@ -36,7 +36,7 @@ module CoalescingPanda
     end
 
     def have_session?
-      if params['tool_consumer_instance_guid'] && session['user_id'] != params['user_id']
+      if params['oauth_consumer_key'] && session['user_id'] != params['user_id']
         reset_session
         logger.info("resetting session params")
         session['user_id'] = params['user_id']
