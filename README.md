@@ -101,6 +101,10 @@ Add the following to your application.js
 
     //= require coalescing_panda/canvas_batch
 
+Add the following to your application.css.scss
+
+    @import 'coalescing_panda/progress';
+
 This partial requires a method called current_batch. You can add this by adding the following line to your application controller:
 
     helper CoalescingPanda::Engine.helpers
@@ -113,19 +117,3 @@ To enable progress bar and batch success / failure callbacks:
 
 If you would like to customize the flash messages simply pass a javascript object as the third param
     new window.CoalescingPanda.CanvasBatchProgress(successCallback, errorCallback, {queued: "example queued message", completed: "example completed message", started: "example started message", error: "example error message"})
-
-### Ajax Gotchas
-if you update your view via ajax you would have to manually kick off the javascript that updates the progress bar. Here is an example
-
-In your controller you must respond_to js
-
-    def create
-        respond_to do |format|
-          format.js
-        end
-    end
-
-Then inside create.js.erb
-
-    $('#batch-container').html( "<%= j render('coalescing_panda/canvas_batches/canvas_batch_flash') %>" ).triggerHandler('batchStarted');
-

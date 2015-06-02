@@ -17,10 +17,10 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
         $('#batch-progress').html(data)
         setFlashMessages()
         batch = $('#batch-info').data('batch')
-        if batch.status == "Completed"
+        if batch && batch.status == "Completed"
           clearIntervalAndBatch(data, batch)
           successCallback() if successCallback != undefined
-        else if batch.status == 'Error'
+        else if batch && batch.status == 'Error'
           clearIntervalAndBatch(data, batch)
           errorCallback() if errorCallback != undefined
 
@@ -45,7 +45,3 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
     if window.messages != undefined
       for key of window.messages
         $(".batch-message-#{key}").text("#{window.messages[key]}")
-
-$ ->
-  $("#batch-container").unbind().bind "batchStarted", (event, data) ->
-    new CanvasBatchProgress()

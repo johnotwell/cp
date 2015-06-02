@@ -10,8 +10,8 @@
 
 -if @batch.status == "Started"
   %h6.batch-message-started Downloading data from Canvas
-  .progress.progress-striped.active
-    .bar{:style => "width: #{@batch.percent_complete}%;"}
+  .progress
+    .progress-bar{"aria-valuemax" => "100", "aria-valuemin" => "0", "aria-valuenow" => "#{@batch.percent_complete}", :role => "progressbar", :style => "width: #{@batch.percent_complete}%;"}
 
 -if @batch.status == "Error"
   .alert.alert-block.alert-error

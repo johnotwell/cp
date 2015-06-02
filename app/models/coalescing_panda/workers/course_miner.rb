@@ -35,11 +35,13 @@ class CoalescingPanda::Workers::CourseMiner
     return unless batch.status == 'Queued'
     begin
       batch.update_attributes(status: "Started", percent_complete: 0)
-      SUPPORTED_MODELS.each_with_index do |model_key, index|
-        index += 1
-        process_api_data(model_key.to_sym) if options.include?(model_key)
+      index = 1
+      SUPPORTED_MODELS.each do |model_key|
+        next unless options.include?(model_key)
+        process_api_data(model_key.to_sym)
         percent_complete = (index/(options.count.nonzero? || 1).to_f * 100).round(1)
         batch.update_attributes(percent_complete: percent_complete)
+        index += 1
       end
       batch.update_attributes(status: "Completed", percent_complete: 100)
     rescue => e
