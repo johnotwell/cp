@@ -1,5 +1,7 @@
 CoalescingPanda::Engine.routes.draw do
-  resources :canvas_batches, only: [:show]
+  resources :canvas_batches, only: [:show, :update] do
+    post :retrigger, on: :member
+  end
   post '/canvas_batches/clear_batch_session', as: :clear_batch_session
 
   get '/oauth2/redirect' => 'oauth2#redirect'

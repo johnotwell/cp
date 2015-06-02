@@ -1,20 +1,30 @@
 #batch-info{data: {batch: @batch.to_json}}
--if @batch.status == "Queued"
-  %h6.batch-message-queued Data is queued for download from Canvas.
+- if @batch.status == "Queued"
+  %span.batch-message-queued Data is queued for download from Canvas.
 
--if @batch.status == "Completed"
+- if @batch.status == "Completed"
   .alert.alert-success
     %button.close{"data-dismiss" => "alert", :type => "button"} ×
     %span.batch-message-completed
       Data successfully downloaded from Canvas.
 
--if @batch.status == "Started"
-  %h6.batch-message-started Downloading data from Canvas
+- if @batch.status == "Started"
+  %span.batch-message-started Downloading data from Canvas
   .progress
     .progress-bar{"aria-valuemax" => "100", "aria-valuemin" => "0", "aria-valuenow" => "#{@batch.percent_complete}", :role => "progressbar", :style => "width: #{@batch.percent_complete}%;"}
 
--if @batch.status == "Error"
+- if @batch.status == "Error"
   .alert.alert-block.alert-error
     %button.close{"data-dismiss" => "alert", :type => "button"} ×
-    %h6.batch-message-error Data failed to download from Canvas
+    %span.batch-message-error Data failed to download from Canvas
     = @batch.message
+
+- if @batch.status == "Canceled"
+  .alert.alert-block.alert-info
+    %button.close{"data-dismiss" => "alert", :type => "button"} ×
+    %span.batch-message-retrigger
+      Canvas data last downloaded
+      = @batch.updated_at
+      .pull-right
+        = link_to "Retrigger", retrigger_canvas_batch_path(@batch), method: :post,  class: "btn btn-default"
+      .clearfix

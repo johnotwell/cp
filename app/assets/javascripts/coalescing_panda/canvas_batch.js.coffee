@@ -23,6 +23,8 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
         else if batch && batch.status == 'Error'
           clearIntervalAndBatch(data, batch)
           errorCallback() if errorCallback != undefined
+        else if batch && batch.status == "Canceled"
+          clearIntervalAndBatch(data, batch)
 
       error: (message) ->
         $('#batch-progress').html('Batch status request failed')

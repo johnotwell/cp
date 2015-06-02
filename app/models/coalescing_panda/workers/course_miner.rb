@@ -23,16 +23,22 @@ class CoalescingPanda::Workers::CourseMiner
     if batch.present? and RUNNING_STATUSES.include?(batch.status)
       batch
     else
-      account.canvas_batches.create(context: course, status: "Queued")
+      batch = account.canvas_batches.create(context: course, status: "Queued")
     end
+    batch.update_attributes(options: options)
+    batch
   end
 
   def api_client
     @api_client ||= Bearcat::Client.new(prefix: account.settings[:base_url], token: account.settings[:account_admin_api_token])
   end
 
-  def start
-    return unless batch.status == 'Queued'
+  def start(forced = false)
+    unless forced
+      return unless batch.status == 'Queued' # don't start if there is already a running job
+      return unless should_download?
+    end
+
     begin
       batch.update_attributes(status: "Started", percent_complete: 0)
       index = 1
@@ -49,6 +55,14 @@ class CoalescingPanda::Workers::CourseMiner
     end
   end
   handle_asynchronously :start
+
+  def should_download?
+    return true unless account.settings[:canvas_download_interval].present?
+    return true unless last_completed_batch = account.canvas_batches.where(context: course, status: 'Completed').order('updated_at ASC').first
+    should_download = last_completed_batch.updated_at < Time.zone.now - account.settings[:canvas_download_interval].minutes
+    batch.update_attributes(status: 'Canceled') unless should_download
+    should_download
+  end
 
   def process_api_data(key)
     case key

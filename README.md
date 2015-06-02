@@ -117,3 +117,6 @@ To enable progress bar and batch success / failure callbacks:
 
 If you would like to customize the flash messages simply pass a javascript object as the third param
     new window.CoalescingPanda.CanvasBatchProgress(successCallback, errorCallback, {queued: "example queued message", completed: "example completed message", started: "example started message", error: "example error message"})
+
+To Enable settings an interval for how often canvas batches should autoload set the following to an integer in minutes
+    account.settings[:canvas_download_interval] = 15 # 15 Minutes
