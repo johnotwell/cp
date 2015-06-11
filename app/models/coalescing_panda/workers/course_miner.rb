@@ -106,39 +106,39 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def sync_assignment_groups(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_assignment_group_id'] = values['id'].to_s
         assignment_group = course.assignment_groups.where(canvas_assignment_group_id: values['canvas_assignment_group_id']).first_or_initialize
         assignment_group.assign_attributes(standard_attributes(assignment_group, values))
         assignment_group.save(validate: false)
         assignment_group_ids << assignment_group.id
+      rescue => e
+        Rails.logger.error "Error syncing assignment group: #{values} Error: #{e}"
       end
-      course.assignment_groups.where.not(id: assignment_group_ids).destroy_all
-    rescue => e
-      Rails.logger.error "Error syncing assignment groups: #{e}"
     end
+    course.assignment_groups.where.not(id: assignment_group_ids).destroy_all
   end
 
   def sync_sections(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['course_section_id'] = values['id'].to_s
         section = course.sections.where(canvas_section_id: values['course_section_id']).first_or_initialize
         section.assign_attributes(standard_attributes(section, values))
         section.sis_id = values['sis_section_id']
         section.save(validate: false)
         course_section_ids << section.id
+      rescue => e
+        Rails.logger.error "Error syncing section: #{values} Error: #{e}"
       end
-      course.sections.where.not(id: course_section_ids).destroy_all
-    rescue => e
-      Rails.logger.error "Error syncing sections: #{e}"
     end
+    course.sections.where.not(id: course_section_ids).destroy_all
   end
 
   def sync_users(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_user_id'] = values["id"].to_s
         user = account.users.where(canvas_user_id: values['canvas_user_id']).first_or_initialize
         user.coalescing_panda_lti_account_id = account.id
@@ -146,18 +146,18 @@ class CoalescingPanda::Workers::CourseMiner
         user.sis_id = values['sis_user_id'].to_s
         user_ids << user.id
         user.save(validate: false)
+      rescue => e
+        Rails.logger.error "Error syncing user: #{values} Error: #{e}"
       end
-      removed_users = course.users.where.not(id: user_ids)
-      removed_users.each do |user|
-        user.enrollments.each do |enrollment|
-          course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
-          enrollment.destroy
-        end
-      end
-      removed_users.destroy_all
-    rescue => e
-      Rails.logger.error "Error syncing users: #{e}"
     end
+    removed_users = course.users.where.not(id: user_ids)
+    removed_users.each do |user|
+      user.enrollments.each do |enrollment|
+        course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
+        enrollment.destroy
+      end
+    end
+    removed_users.destroy_all
   end
 
   def sync_enrollments(collection)
@@ -185,8 +185,8 @@ class CoalescingPanda::Workers::CourseMiner
   end
 
   def sync_assignments(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_assignment_id'] = values['id'].to_s
         assignment = course.assignments.where(canvas_assignment_id: values['canvas_assignment_id']).first_or_initialize
         assignment_group = course.assignment_groups.find_by(canvas_assignment_group_id: values['assignment_group_id'])
@@ -194,58 +194,58 @@ class CoalescingPanda::Workers::CourseMiner
         assignment.assign_attributes(standard_attributes(assignment, values))
         assignment.save(validate: false)
         assignment_ids << assignment.id
+      rescue => e
+        Rails.logger.error "Error syncing assignment: #{values} Error: #{e}"
       end
-      course.assignments.where.not(id: assignment_ids).each do |assignment|
-        assignment.submissions.destroy_all
-        assignment.destroy!
-      end
-    rescue => e
-      Rails.logger.error "Error syncing assignments: #{e}"
+    end
+    course.assignments.where.not(id: assignment_ids).each do |assignment|
+      assignment.submissions.destroy_all
+      assignment.destroy!
     end
   end
 
   def sync_submissions(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_submission_id'] = values['id'].to_s
         submission = course.submissions.where(canvas_submission_id: values['canvas_submission_id']).first_or_initialize
         submission.user = course.users.find_by(canvas_user_id: values['user_id'].to_s)
         submission.assignment = course.assignments.find_by(canvas_assignment_id: values['assignment_id'].to_s)
         submission.assign_attributes(standard_attributes(submission, values))
         submission.save(validate: false)
+      rescue => e
+        Rails.logger.error "Error syncing submission: #{values} Error: #{e}"
       end
-    rescue => e
-      Rails.logger.error "Error syncing submissions: #{e}"
     end
   end
 
   def sync_groups(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_group_id'] = values['id'].to_s
         group = course.groups.where(canvas_group_id: values['canvas_group_id']).first_or_initialize
         group.assign_attributes(standard_attributes(group, values))
         group.save(validate: false)
         group_ids << group.id
+      rescue => e
+        Rails.logger.error "Error syncing group: #{values} Error: #{e}"
       end
-      course.groups.where.not(id: group_ids).destroy_all
-    rescue => e
-      Rails.logger.error "Error syncing groups: #{e}"
     end
+    course.groups.where.not(id: group_ids).destroy_all
   end
 
   def sync_group_memberships(collection)
-    begin
-      collection.each do |values|
+    collection.each do |values|
+      begin
         values['canvas_group_membership_id'] = values['id'].to_s
         group_membership = course.group_memberships.where(canvas_group_membership_id: values['canvas_group_membership_id']).first_or_initialize
         group_membership.group = course.groups.find_by(canvas_group_id: values['group_id'].to_s)
         group_membership.user = course.users.find_by(canvas_user_id: values['user_id'].to_s)
         group_membership.assign_attributes(standard_attributes(group_membership, values))
         group_membership.save(validate: false)
+      rescue => e
+        Rails.logger.error "Error syncing group memebership: #{values} Error: #{e}"
       end
-    rescue => e
-      Rails.logger.error "Error syncing group memberships: #{e}"
     end
   end
 
