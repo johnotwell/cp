@@ -7,7 +7,7 @@ window.CoalescingPanda.CanvasBatchProgress = class CanvasBatchProgress
     batch = $('#batch-progress').data('batch')
     url = $('#batch-progress').data('url')
     window.clearPath = $('#batch-progress').data('clear-path')
-    if batch && batch.status != "Completed" || batch.status != "Error"
+    if batch && (batch.status != "Completed" || batch.status != "Error")
       window.batchInterval = setInterval(getBatchStatus, 3000, batch.id, url, successCallback, errorCallback)
 
   getBatchStatus = (id, url, successCallback, errorCallback) ->
