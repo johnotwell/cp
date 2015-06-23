@@ -13,7 +13,7 @@ module CoalescingPanda
         client_key = lti_account.oauth2_client_key
         user_id = params[:user_id]
         api_domain = params[:api_domain]
-        client = Bearcat::Client.new(prefix: oauth2_protocol+'://'+api_domain)
+        client = Bearcat::Client.new(prefix: [oauth2_protocol, '://', api_domain].join)
         token = client.retrieve_token(client_id, coalescing_panda.oauth2_redirect_url, client_key, params['code'])
         CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).first_or_create do |auth|
           auth.api_token = token

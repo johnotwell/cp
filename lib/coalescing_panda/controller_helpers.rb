@@ -10,7 +10,7 @@ module CoalescingPanda
         uri = URI.parse(launch_presentation_return_url)
         api_domain = uri.host
         api_domain = "#{api_domain}:#{uri.port.to_s}" if uri.port
-        scheme = uri.scheme + '://'
+        scheme = [uri.scheme, '://'].join
         @lti_params = params.to_hash
         session['user_id'] = user_id
         session['uri'] = launch_presentation_return_url

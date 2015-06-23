@@ -51,12 +51,12 @@ module CoalescingPanda
       if %w(course account user).include?(name)
         tail = '_navigation' unless name.include? '_navigation'
       end
-      (name+tail).to_sym
+      ([name, tail].join).to_sym
     end
 
     def ext_params(options)
       url = options.delete(:url)
-      options[:url] = main_app.send(url+'_url')
+      options[:url] = main_app.send([url,'_url'].join)
       options
     end
 
