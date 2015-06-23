@@ -19,10 +19,10 @@ module CoalescingPanda
         session['custom_canvas_account_id'] = params['custom_canvas_account_id']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
-          @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
+          @client = Bearcat::Client.new(token: token, prefix: [scheme, api_domain].join)
         elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
           client_id = @lti_account.oauth2_client_id
-          client = Bearcat::Client.new(prefix: scheme+api_domain)
+          client = Bearcat::Client.new(prefix: [scheme, api_domain].join)
           session['state'] = SecureRandom.hex(32)
           @canvas_url = client.auth_redirect_url(client_id,
                                                  coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
