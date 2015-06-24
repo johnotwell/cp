@@ -7,7 +7,7 @@ module CoalescingPanda
       if lti_authorize!(*roles)
         user_id = params['user_id']
         launch_presentation_return_url = @lti_account.settings[:launch_presentation_return_url] || params['launch_presentation_return_url']
-        uri = BearcatURI.new(launch_presentation_return_url)
+        uri = BearcatUri.new(launch_presentation_return_url)
         @lti_params = params.to_hash
         session['user_id'] = user_id
         session['uri'] = launch_presentation_return_url
@@ -21,9 +21,9 @@ module CoalescingPanda
           client_id = @lti_account.oauth2_client_id
           client = Bearcat::Client.new(prefix: uri.prefix)
           session['state'] = SecureRandom.hex(32)
-          @canvas_url = client.auth_redirect_url(client_id,
-                                                 coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
-                                                                                       user_id: user_id, api_domain: uri.api_domain, state: session['state']}))
+          redirect_url = [coalescing_panda_url, coalescing_panda.oauth2_redirect_path({key: params['oauth_consumer_key'], user_id: user_id, api_domain: uri.api_domain, state: session['state']})].join
+          @canvas_url = client.auth_redirect_url(client_id, redirect_url)
+
           #delete the added params so the original oauth sig still works
           @lti_params.delete('action')
           @lti_params.delete('controller')
@@ -40,7 +40,7 @@ module CoalescingPanda
       end
 
       if (session['user_id'] && session['uri'])
-        uri = BearcatURI.new(session['uri'])
+        uri = BearcatUri.new(session['uri'])
         token = CanvasApiAuth.where('user_id = ? and api_domain = ?', session['user_id'], uri.api_domain).pluck(:api_token).first
         @client = Bearcat::Client.new(token: token, prefix: uri.prefix) if token
       end
@@ -119,27 +119,6 @@ module CoalescingPanda
           query = params.to_query
           render :text => "<script>var referrer = document.referrer; top.window.location='?safari_cookie_fix=true&return_to='.concat(encodeURI(referrer));</script>"
         end
-      end
-    end
-
-    class BearcatURI
-      attr_accessor :uri
-
-      def initialize(uri)
-        Rails.logger.info "Parsing Bearcat URI: #{uri}"
-        @uri = URI.parse(uri)
-      end
-
-      def api_domain
-        uri.port.present? ? "#{uri.host}:#{uri.port.to_s}" : uri.host
-      end
-
-      def scheme
-        [uri.scheme, '://'].join
-      end
-
-      def prefix
-        [scheme, api_domain].join
       end
     end
 
