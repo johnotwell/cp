@@ -7,13 +7,9 @@ module CoalescingPanda
       if lti_authorize!(*roles)
         user_id = params['user_id']
         launch_presentation_return_url = @lti_account.settings[:launch_presentation_return_url] || params['launch_presentation_return_url']
+        launch_presentation_return_url = [BearcatUri.new(request.env["HTTP_REFERER"]).prefix, launch_presentation_return_url].join unless launch_presentation_return_url.include?('http')
         uri = BearcatUri.new(launch_presentation_return_url)
-        @lti_params = params.to_hash
-        session['user_id'] = user_id
-        session['uri'] = launch_presentation_return_url
-        session['lis_person_sourcedid'] = params['lis_person_sourcedid']
-        session['oauth_consumer_key'] = params['oauth_consumer_key']
-        session['custom_canvas_account_id'] = params['custom_canvas_account_id']
+        set_session(launch_presentation_return_url)
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, uri.api_domain).pluck(:api_token).first
           @client = Bearcat::Client.new(token: token, prefix: uri.prefix)
@@ -25,11 +21,20 @@ module CoalescingPanda
           @canvas_url = client.auth_redirect_url(client_id, redirect_url)
 
           #delete the added params so the original oauth sig still works
+          @lti_params = params.to_hash
           @lti_params.delete('action')
           @lti_params.delete('controller')
           render 'coalescing_panda/oauth2/oauth2', layout: 'coalescing_panda/application'
         end
       end
+    end
+
+    def set_session(launch_presentation_return_url)
+      session['user_id'] = params['user_id']
+      session['uri'] = launch_presentation_return_url
+      session['lis_person_sourcedid'] = params['lis_person_sourcedid']
+      session['oauth_consumer_key'] = params['oauth_consumer_key']
+      session['custom_canvas_account_id'] = params['custom_canvas_account_id']
     end
 
     def have_session?
@@ -61,9 +66,7 @@ module CoalescingPanda
       logger.info 'not authorized on roles' if !authorized
       authorized = authorized && @lti_account.validate_nonce(params['oauth_nonce'], DateTime.strptime(params['oauth_timestamp'], '%s'))
       logger.info 'not authorized on nonce' if !authorized
-      if !authorized
-        render :text => 'Invalid Credentials, please contact your Administrator.', :status => :unauthorized
-      end
+      render :text => 'Invalid Credentials, please contact your Administrator.', :status => :unauthorized unless authorized
       authorized
     end
 
