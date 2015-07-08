@@ -1,5 +1,5 @@
 class CoalescingPanda::Workers::CourseMiner
-  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignment_groups, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
+  SUPPORTED_MODELS = [:sections, :users, :enrollments, :assignment_groups, :group_categories, :assignments, :submissions, :groups, :group_memberships] #ORDER MATTERS!!
   COMPLETED_STATUSES = ['Completed', 'Error']
   RUNNING_STATUSES = ['Queued', 'Started']
 
@@ -92,6 +92,9 @@ class CoalescingPanda::Workers::CourseMiner
     when :groups
       collection = api_client.course_groups(course.canvas_course_id).all_pages!
       sync_groups(collection)
+    when :group_categories
+      collection = api_client.list_group_categories('courses', course.canvas_course_id).all_pages!
+      sync_group_categories(collection)
     when :group_memberships
       collection = []
       course.groups.each do |group|
@@ -190,7 +193,9 @@ class CoalescingPanda::Workers::CourseMiner
         values['canvas_assignment_id'] = values['id'].to_s
         assignment = course.assignments.where(canvas_assignment_id: values['canvas_assignment_id']).first_or_initialize
         assignment_group = course.assignment_groups.find_by(canvas_assignment_group_id: values['assignment_group_id'])
+        group_category = course.group_categories.find_by(canvas_group_category_id: values['group_category_id'])
         assignment.coalescing_panda_assignment_group_id = assignment_group.id if assignment_group
+        assignment.coalescing_panda_group_category_id = group_category.id if group_category
         assignment.assign_attributes(standard_attributes(assignment, values))
         assignment.save(validate: false)
         assignment_ids << assignment.id
@@ -219,11 +224,32 @@ class CoalescingPanda::Workers::CourseMiner
     end
   end
 
+  def sync_group_categories(collection)
+    collection.each do |values|
+      begin
+        values['canvas_group_category_id'] = values['id'].to_s
+        values.delete('context_type')    #assume only course for now
+        category = course.group_categories.where(canvas_group_category_id: values['canvas_group_category_id']).first_or_initialize
+        category.assign_attributes(standard_attributes(category, values))
+        category.save(validate: false)
+      rescue => e
+        Rails.logger.error "Error syncing group categories: #{values} Error: #{e.message} -  #{e.backtrace}"
+      end
+    end
+  end
+
   def sync_groups(collection)
     collection.each do |values|
       begin
         values['canvas_group_id'] = values['id'].to_s
         group = course.groups.where(canvas_group_id: values['canvas_group_id']).first_or_initialize
+        group_category = course.group_categories.find_by(canvas_group_category_id: values['group_category_id'])
+        if values['leader']
+          group.leader = course.users.find_by(canvas_user_id: values['leader']['id'].to_s)
+        else
+          group.leader = nil
+        end
+        group.coalescing_panda_group_category_id = group_category.id if group_category
         group.assign_attributes(standard_attributes(group, values))
         group.save(validate: false)
         group_ids << group.id

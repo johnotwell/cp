@@ -17,7 +17,7 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"associated_user_id"=>nil, "course_id"=>1, "course_section_id"=>1, "created_at"=>"2014-11-07T21:18:17Z", "end_at"=>nil, "id"=>3, "limit_privileges_to_course_section"=>false, "root_account_id"=>1, "start_at"=>nil, "type"=>"StudentEnrollment", "updated_at"=>"2014-11-20T23:18:21Z", "user_id"=>3, "enrollment_state"=>"active", "role"=>"StudentEnrollment", "role_id"=>3, "last_activity_at"=>"2014-11-10T22:10:15Z", "total_activity_time"=>921, "sis_import_id"=>nil, "grades"=>{"html_url"=>"http://localhost:3000/courses/1/grades/3", "current_score"=>80, "final_score"=>80, "current_grade"=>nil, "final_grade"=>nil}, "sis_course_id"=>"DOCSTUCOMM", "course_integration_id"=>nil, "sis_section_id"=>nil, "section_integration_id"=>nil, "html_url"=>"http://localhost:3000/courses/1/users/3", "user"=>{"id"=>3, "name"=>"student2@test.com", "sortable_name"=>"student2@test.com", "short_name"=>"student2@test.com", "login_id"=>"student2@test.com"}},
   ]}
   let(:assignments_response) {[
-    {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>nil, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>nil, "id"=>1, "lock_at"=>nil, "peer_reviews"=>false, "points_possible"=>100, "position"=>1, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "course_id"=>1, "name"=>"Gimme your name", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/1", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false},
+    {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>nil, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>1, "id"=>1, "lock_at"=>nil, "peer_reviews"=>false, "points_possible"=>100, "position"=>1, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "course_id"=>1, "name"=>"Gimme your name", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/1", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false},
     {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T19:10:28Z", "description"=>"<p>What is your Favorite Color?</p>", "due_at"=>nil, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>nil, "id"=>2, "lock_at"=>nil, "peer_reviews"=>false, "points_possible"=>100, "position"=>2, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T19:10:30Z", "course_id"=>1, "name"=>"Favorite Color", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/2", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false}
   ]}
   let(:submissions_response1) {[
@@ -28,13 +28,16 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"90", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:21Z", "grader_id"=>1, "id"=>4, "score"=>90, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>3, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/3?preview=1"},
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"80", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:17Z", "grader_id"=>1, "id"=>2, "score"=>80, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>2, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/2?preview=1"}
   ]}
+  let(:group_categories_response){[
+    {"auto_leader" => "first", "group_limit" => nil, "id" => 1, "name" => "mark red", "role" => nil, "self_signup" => nil, "context_type" => "Course", "course_id" => 1, "protected" => false, "allows_multiple_memberships" => false, "is_member" => false}
+  ]}
   let(:groups_response){[
-    {"description"=> nil, "group_category_id"=> 3, "id"=> 4, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 1", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> nil},
-    {"description"=> nil, "group_category_id"=> 3, "id"=> 5, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 2", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> nil}
+    {"description"=> nil, "group_category_id"=> 1, "id"=> 4, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 1", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> {"id"=>2}},
+    {"description"=> nil, "group_category_id"=> nil, "id"=> 5, "is_public"=> false, "join_level"=> "invitation_only", "max_membership"=> 5, "name"=> "Student Group 2", "members_count"=> 2, "storage_quota_mb"=> 50, "context_type"=> "CoalescingPanda::Course", "course_id"=> 1, "avatar_url"=> nil, "role"=> nil, "leader"=> nil}
   ]}
   let(:membership_response){[
-    {"group_id"=> 4, "id"=> 13, "moderator"=> false, "user_id"=> 2, "workflow_state"=> "accepted"},
-    {"group_id"=> 4, "id"=> 14, "moderator"=> false, "user_id"=> 3, "workflow_state"=> "accepted"}
+    {"group_id"=> 4, "id"=> 13, "moderator"=> "true", "user_id"=> 2, "workflow_state"=> "accepted"},
+    {"group_id"=> 4, "id"=> 14, "moderator"=> "false", "user_id"=> 3, "workflow_state"=> "accepted"}
   ]}
   let(:assignment_groups_response) {[
     {"group_weight" => 500, "id" => 3, "name" => "Assignments", "position" => 3, "rules" => {} }
@@ -97,10 +100,17 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
       expect(CoalescingPanda::Enrollment.last.workflow_state).to eq "active"
     end
 
+    it 'creates group categories' do
+      worker.sync_group_categories(group_categories_response)
+      expect(CoalescingPanda::GroupCategory.count).to eq 1
+    end
+
     it 'creates assignments' do
       CoalescingPanda::Assignment.destroy_all
+      worker.sync_group_categories(group_categories_response)
       worker.sync_assignments(assignments_response)
       expect(CoalescingPanda::Assignment.count).to eq 2
+      expect(CoalescingPanda::Assignment.find_by(canvas_assignment_id: 1).group_category).to_not be_nil
     end
 
     it 'creates assignment groups' do
@@ -123,8 +133,20 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
 
     it 'creates groups' do
       CoalescingPanda::Group.destroy_all
+      worker.sync_group_categories(group_categories_response)
       worker.sync_groups(groups_response)
       expect(CoalescingPanda::Group.count).to eq 2
+      expect(CoalescingPanda::Group.find_by(canvas_group_id: 4)).to_not be_nil
+    end
+
+    it 'creates groups with leaders' do
+      CoalescingPanda::Group.destroy_all
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      worker.sync_groups(groups_response)
+      expect(CoalescingPanda::Group.count).to eq 2
+      expect(CoalescingPanda::Group.where(canvas_group_id: "4").first.leader).to_not be_nil
     end
 
     it 'creates group memberships' do
@@ -175,9 +197,9 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     end
 
     it 'returns group membership attributes' do
-      attributes = {"group_id"=> 4,"id"=> 13,"moderator"=> false,"user_id"=> 2,"workflow_state"=> "accepted"}
+      attributes = {"group_id"=> 4,"id"=> 13,"moderator"=> "false","user_id"=> 2,"workflow_state"=> "accepted"}
       record = CoalescingPanda::GroupMembership.new
-      expect(worker.standard_attributes(record, attributes)).to eq({"workflow_state" => "accepted"})
+      expect(worker.standard_attributes(record, attributes)).to eq({"moderator"=> "false", "workflow_state" => "accepted"})
     end
   end
 

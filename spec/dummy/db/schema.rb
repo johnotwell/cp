@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150506192717) do
+ActiveRecord::Schema.define(version: 20150714205405) do
 
   create_table "coalescing_panda_assignment_groups", force: :cascade do |t|
     t.integer  "coalescing_panda_course_id", null: false
@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(version: 20150506192717) do
     t.boolean  "grade_group_students_individually"
     t.boolean  "published"
     t.integer  "coalescing_panda_assignment_group_id"
+    t.integer  "coalescing_panda_group_category_id"
   end
 
   add_index "coalescing_panda_assignments", ["coalescing_panda_course_id", "canvas_assignment_id"], name: "index_assignments_course", unique: true
@@ -59,13 +60,15 @@ ActiveRecord::Schema.define(version: 20150506192717) do
   end
 
   create_table "coalescing_panda_canvas_batches", force: :cascade do |t|
-    t.float    "percent_complete",             default: 0.0
-    t.string   "status",           limit: 255
+    t.float    "percent_complete",                            default: 0.0
+    t.string   "status",                          limit: 255
     t.text     "message"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "context_id"
-    t.string   "context_type",     limit: 255
+    t.string   "context_type",                    limit: 255
+    t.integer  "coalescing_panda_lti_account_id"
+    t.text     "options"
   end
 
   create_table "coalescing_panda_courses", force: :cascade do |t|
@@ -102,6 +105,17 @@ ActiveRecord::Schema.define(version: 20150506192717) do
   add_index "coalescing_panda_enrollments", ["coalescing_panda_user_id", "coalescing_panda_section_id", "enrollment_type"], name: "index_enrollments_user_and_section", unique: true
   add_index "coalescing_panda_enrollments", ["sis_id"], name: "index_coalescing_panda_enrollments_on_sis_id"
 
+  create_table "coalescing_panda_group_categories", force: :cascade do |t|
+    t.integer  "context_id"
+    t.string   "context_type"
+    t.integer  "canvas_group_category_id"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "coalescing_panda_group_categories", ["context_id", "context_type"], name: "index_group_categories_context_and_context_type"
+
   create_table "coalescing_panda_group_memberships", force: :cascade do |t|
     t.integer  "coalescing_panda_group_id"
     t.integer  "coalescing_panda_user_id"
@@ -109,19 +123,26 @@ ActiveRecord::Schema.define(version: 20150506192717) do
     t.string   "workflow_state",             limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "moderator"
   end
+
+  add_index "coalescing_panda_group_memberships", ["coalescing_panda_group_id", "coalescing_panda_user_id"], name: "index_group_memberships_user_and_group", unique: true
 
   create_table "coalescing_panda_groups", force: :cascade do |t|
     t.integer  "context_id"
-    t.string   "context_type",      limit: 255
-    t.string   "description",       limit: 255
-    t.string   "group_category_id", limit: 255
-    t.string   "canvas_group_id",   limit: 255
-    t.string   "name",              limit: 255
+    t.string   "context_type",                       limit: 255
+    t.string   "description",                        limit: 255
+    t.string   "group_category_id",                  limit: 255
+    t.string   "canvas_group_id",                    limit: 255
+    t.string   "name",                               limit: 255
     t.integer  "members_count"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "leader_id"
+    t.integer  "coalescing_panda_group_category_id"
   end
+
+  add_index "coalescing_panda_groups", ["context_id", "canvas_group_id"], name: "index_groups_context_and_group_id", unique: true
 
   create_table "coalescing_panda_lti_accounts", force: :cascade do |t|
     t.string   "name",              limit: 255

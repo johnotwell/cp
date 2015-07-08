@@ -3,6 +3,7 @@ module CoalescingPanda
     belongs_to :account, foreign_key: :coalescing_panda_lti_account_id, class_name: 'CoalescingPanda::LtiAccount'
     has_many :enrollments, foreign_key: :coalescing_panda_user_id, class_name: 'CoalescingPanda::Enrollment', dependent: :destroy
     has_many :submissions, foreign_key: :coalescing_panda_user_id, class_name: 'CoalescingPanda::Submission', dependent: :destroy
+    has_many :leader_groups, foreign_key: :leader_id, class_name: 'CoalescingPanda::Group'
     has_many :sections, through: :enrollments
     has_many :courses, through: :sections
 

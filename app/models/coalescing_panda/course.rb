@@ -8,6 +8,7 @@ module CoalescingPanda
     has_many :submissions, through: :assignments, dependent: :destroy
     has_many :users, through: :sections, source: :users, class_name: 'CoalescingPanda::User'
     has_many :groups, :as => :context, class_name: 'CoalescingPanda::Group', dependent: :destroy
+    has_many :group_categories, :as => :context, class_name: 'CoalescingPanda::GroupCategory', dependent: :destroy
     has_many :group_memberships, through: :groups, source: :group_memberships, class_name: 'CoalescingPanda::GroupMembership', dependent: :destroy
     has_many :canvas_batches, as: :context, dependent: :destroy
     has_many :assignment_groups, foreign_key: :coalescing_panda_course_id, class_name: 'CoalescingPanda::AssignmentGroup', dependent: :destroy
