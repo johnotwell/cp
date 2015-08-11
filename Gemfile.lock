@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (4.1.14)
-      bearcat (= 1.0.21)
+    coalescing_panda (4.1.16)
+      bearcat (~> 1.0.21)
       coffee-rails
       delayed_job_active_record
       haml-rails

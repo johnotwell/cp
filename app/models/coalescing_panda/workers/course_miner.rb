@@ -147,8 +147,8 @@ class CoalescingPanda::Workers::CourseMiner
         user.coalescing_panda_lti_account_id = account.id
         user.assign_attributes(standard_attributes(user, values))
         user.sis_id = values['sis_user_id'].to_s
-        user_ids << user.id
         user.save(validate: false)
+        user_ids << user.id
       rescue => e
         Rails.logger.error "Error syncing user: #{values} Error: #{e}"
       end

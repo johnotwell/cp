@@ -169,7 +169,7 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     it 'returns a users attributes' do
       attributes = {"id"=>1, "name"=>"teacher@test.com", "sortable_name"=>"teacher@test.com", "short_name"=>"teacher@test.com", "login_id"=>"teacher@test.com"}
       record = CoalescingPanda::User.new
-      expect(worker.standard_attributes(record, attributes)).to eq({"name" => "teacher@test.com"})
+      expect(worker.standard_attributes(record, attributes)).to eq({"name"=>"teacher@test.com", "login_id"=>"teacher@test.com"})
     end
 
     it 'returns enrollments attributes' do
