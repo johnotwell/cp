@@ -9,6 +9,12 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"id"=>3, "name"=>"student2@test.com", "sortable_name"=>"student2@test.com", "short_name"=>"student2@test.com", "login_id"=>"student2@test.com"}
   ]}
 
+  let(:courses_response) {[
+    {"account_id"=>account.canvas_account_id, "course_code"=>"sub1c1", "enrollment_term_id"=>3, "id"=>1, "is_public"=> false, "name"=>"Course1", "start_at"=>"2015-02-24T19:04:00Z", "end_at"=>nil, "sis_course_id"=>"course_1_sis", "workflow_state"=>"available"},
+    {"account_id"=>account.canvas_account_id, "course_code"=>"sub1c2", "enrollment_term_id"=>3, "id"=>2, "is_public"=> false, "name"=>"Course2", "start_at"=>"2015-03-24T19:04:00Z", "end_at"=>nil, "sis_course_id"=>"course_2_sis", "workflow_state"=>"available"}
+  ]}
+
+
   before do
     Bearcat::Client.any_instance.stub(:list_users) { double(Bearcat::ApiArray, :all_pages! => users_response) }
   end
@@ -35,6 +41,12 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
   end
 
   describe '#create_records' do
+    it 'creates courses' do
+      CoalescingPanda::User.destroy_all
+      worker.sync_courses(courses_response)
+      expect(CoalescingPanda::Course.count).to eq 2
+    end
+
     it 'creates users' do
       CoalescingPanda::User.destroy_all
       worker.sync_users(users_response)

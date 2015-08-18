@@ -1,15 +1,16 @@
 class CoalescingPanda::Workers::AccountMiner
-  SUPPORTED_MODELS = [:users]
+  SUPPORTED_MODELS = [:courses, :users]
   COMPLETED_STATUSES = ['Completed', 'Error']
   RUNNING_STATUSES = ['Queued', 'Started']
 
-  attr_accessor :options, :account, :batch, :user_ids
+  attr_accessor :options, :account, :batch, :user_ids, :course_ids
 
   def initialize(account, options = [])
     @account = account
     @options = options
     @batch = setup_batch
     @user_ids = []
+    @course_ids = []
   end
 
   def setup_batch
@@ -60,12 +61,39 @@ class CoalescingPanda::Workers::AccountMiner
 
   def process_api_data(key)
     case key
+    when :courses
+      collection = api_client.account_courses(account.canvas_account_id).all_pages!
+      sync_courses(collection)
     when :users
       collection = api_client.list_users(account.canvas_account_id).all_pages!
       sync_users(collection)
     else
       raise "API METHOD DOESN'T EXIST"
     end
+  end
+
+  def sync_courses(collection)
+    collection.each do |values|
+      begin
+        values['canvas_course_id'] = values["id"].to_s
+        course = account.courses.where(canvas_course_id: values['canvas_course_id']).first_or_initialize
+        course.coalescing_panda_lti_account_id = account.id
+        course.assign_attributes(standard_attributes(course, values))
+        course.sis_id = values['sis_course_id'].to_s
+        course.save(validate: false)
+        course_ids << course.id
+      rescue => e
+        Rails.logger.error "Error syncing course: #{values} Error: #{e}"
+      end
+    end
+    removed_courses = account.courses.where.not(id: course_ids)
+    removed_courses.each do |course|
+      course.enrollments.each do |enrollment|
+        account.submissions.where(coalescing_panda_course_id: enrollment.course.id).destroy_all
+        enrollment.destroy
+      end
+    end
+    removed_courses.destroy_all
   end
 
   def sync_users(collection)

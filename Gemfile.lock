@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (4.1.16)
+    coalescing_panda (4.1.17)
       bearcat (~> 1.0.21)
       coffee-rails
       delayed_job_active_record
@@ -78,7 +78,7 @@ GEM
     diff-lcs (1.2.5)
     docile (1.1.5)
     erubis (2.7.0)
-    execjs (2.5.2)
+    execjs (2.6.0)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.5.0)
@@ -90,9 +90,9 @@ GEM
       activesupport (>= 3.0.0)
       faraday (~> 0.9.0)
       link_header (>= 0.0.7)
-    globalid (0.3.5)
+    globalid (0.3.6)
       activesupport (>= 4.1.0)
-    haml (4.0.6)
+    haml (4.0.7)
       tilt
     haml-rails (0.9.0)
       actionpack (>= 4.0.1)
@@ -184,7 +184,7 @@ GEM
       rspec-mocks (~> 3.2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
-    ruby_parser (3.7.0)
+    ruby_parser (3.7.1)
       sexp_processor (~> 4.1)
     safe_yaml (1.0.4)
     sass (3.4.16)
@@ -203,7 +203,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.0)
     slop (3.6.0)
-    sprockets (3.2.0)
+    sprockets (3.3.1)
       rack (~> 1.0)
     sprockets-rails (2.3.2)
       actionpack (>= 3.0)
@@ -216,7 +216,7 @@ GEM
     tilt (1.4.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    useragent (0.14.0)
+    useragent (0.15.1)
     webmock (1.21.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
