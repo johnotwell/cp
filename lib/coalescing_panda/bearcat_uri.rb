@@ -7,7 +7,7 @@ class CoalescingPanda::BearcatUri
   end
 
   def api_domain
-    uri.port.present? ? "#{uri.host}:#{uri.port.to_s}" : uri.host
+    uri.port.present? ? URI.encode("#{uri.host}:#{uri.port.to_s}") : uri.host
   end
 
   def scheme
