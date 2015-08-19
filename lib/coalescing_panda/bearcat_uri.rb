@@ -7,7 +7,11 @@ class CoalescingPanda::BearcatUri
   end
 
   def api_domain
-    uri.port.present? ? URI.encode("#{uri.host}:#{uri.port.to_s}") : uri.host
+    if Rails.env.test? or Rails.env.development?
+      uri.port.present? ? URI.encode("#{uri.host}:#{uri.port.to_s}") : uri.host
+    else
+      uri.host
+    end
   end
 
   def scheme
