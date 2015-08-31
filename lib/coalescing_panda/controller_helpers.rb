@@ -112,7 +112,7 @@ module CoalescingPanda
 
     def session_check
       user_agent = UserAgent.parse(request.user_agent) # Uses useragent gem!
-      if user_agent.browser == 'Safari' # we apply the fix..
+      if user_agent.browser == 'Safari' && !request.referrer.include?('sessionless_launch') # we apply the fix..
         return if session[:safari_cookie_fixed] # it is already fixed.. continue
         if params[:safari_cookie_fix].present? # we should be top window and able to set cookies.. so fix the issue :)
           session[:safari_cookie_fixed] = true
