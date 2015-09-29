@@ -65,6 +65,17 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     end
   end
 
+  describe '#enrollment_states' do
+    it 'builds without option' do
+      expect(worker.enrollment_states).to eq(['active', 'invited'])
+    end
+
+    it 'builds with option' do
+      miner = CoalescingPanda::Workers::CourseMiner.new(course, [:include_complete])
+      expect(miner.enrollment_states).to eq(['active', 'invited', 'completed'])
+    end
+  end
+
   describe '#api_client' do
     it 'returns a bearcat API client' do
       expect(worker.api_client.class).to eq Bearcat::Client

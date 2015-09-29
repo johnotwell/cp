@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coalescing_panda (4.1.21)
+    coalescing_panda (4.2.0)
       bearcat (~> 1.0.21)
       coffee-rails
       delayed_job_active_record
@@ -236,3 +236,6 @@ DEPENDENCIES
   simplecov
   sqlite3
   webmock
+
+BUNDLED WITH
+   1.10.6

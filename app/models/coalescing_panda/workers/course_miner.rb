@@ -73,10 +73,10 @@ class CoalescingPanda::Workers::CourseMiner
       collection = api_client.course_sections(course.canvas_course_id).all_pages!
       sync_sections(collection)
     when :users
-      collection = api_client.list_course_users(course.canvas_course_id).all_pages!
+      collection = api_client.list_course_users(course.canvas_course_id, {'enrollment_state' => enrollment_states}).all_pages!
       sync_users(collection)
     when :enrollments
-      collection = api_client.course_enrollments(course.canvas_course_id, {'include[]' => 'completed'}).all_pages!
+      collection = api_client.course_enrollments(course.canvas_course_id, {'state' => enrollment_states}).all_pages!
       sync_enrollments(collection)
     when :assignments
       collection = api_client.assignments(course.canvas_course_id).all_pages!
@@ -106,6 +106,12 @@ class CoalescingPanda::Workers::CourseMiner
     else
       raise "API METHOD DOESN'T EXIST"
     end
+  end
+
+  def enrollment_states
+    enrollment_state =  ['active', 'invited']
+    enrollment_state << 'completed' if @options.include?(:include_complete)
+    enrollment_state
   end
 
   def sync_assignment_groups(collection)
