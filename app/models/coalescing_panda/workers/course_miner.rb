@@ -76,7 +76,7 @@ class CoalescingPanda::Workers::CourseMiner
       collection = api_client.list_course_users(course.canvas_course_id).all_pages!
       sync_users(collection)
     when :enrollments
-      collection = api_client.course_enrollments(course.canvas_course_id).all_pages!
+      collection = api_client.course_enrollments(course.canvas_course_id, {'include[]' => 'completed'}).all_pages!
       sync_enrollments(collection)
     when :assignments
       collection = api_client.assignments(course.canvas_course_id).all_pages!
