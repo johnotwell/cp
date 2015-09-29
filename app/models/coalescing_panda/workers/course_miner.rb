@@ -120,7 +120,7 @@ class CoalescingPanda::Workers::CourseMiner
         Rails.logger.error "Error syncing assignment group: #{values} Error: #{e}"
       end
     end
-    course.assignment_groups.where.not(id: assignment_group_ids).destroy_all
+    delete_collection(course.assignment_groups.where.not(id: assignment_group_ids))
   end
 
   def sync_sections(collection)
@@ -136,7 +136,7 @@ class CoalescingPanda::Workers::CourseMiner
         Rails.logger.error "Error syncing section: #{values} Error: #{e}"
       end
     end
-    course.sections.where.not(id: course_section_ids).destroy_all
+    delete_collection(course.sections.where.not(id: course_section_ids))
   end
 
   def sync_users(collection)
@@ -156,11 +156,11 @@ class CoalescingPanda::Workers::CourseMiner
     removed_users = course.users.where.not(id: user_ids)
     removed_users.each do |user|
       user.enrollments.each do |enrollment|
-        course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
-        enrollment.destroy
+        delete_collection(course.submissions.where(coalescing_panda_user_id: enrollment.user.id))
+        delete_object(enrollment)
       end
     end
-    removed_users.destroy_all
+    delete_collection(removed_users)
   end
 
   def sync_enrollments(collection)
@@ -182,9 +182,9 @@ class CoalescingPanda::Workers::CourseMiner
     end
     removed_enrollments = course.enrollments.where.not(id: enrollment_ids)
     removed_enrollments.each do |enrollment|
-      course.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
+      delete_collection(course.submissions.where(coalescing_panda_user_id: enrollment.user.id))
     end
-    removed_enrollments.destroy_all
+    delete_collection(removed_enrollments)
   end
 
   def sync_assignments(collection)
@@ -204,8 +204,8 @@ class CoalescingPanda::Workers::CourseMiner
       end
     end
     course.assignments.where.not(id: assignment_ids).each do |assignment|
-      assignment.submissions.destroy_all
-      assignment.destroy!
+      delete_collection(assignment.submissions)
+      delete_object(assignment)
     end
   end
 
@@ -257,7 +257,34 @@ class CoalescingPanda::Workers::CourseMiner
         Rails.logger.error "Error syncing group: #{values} Error: #{e}"
       end
     end
-    course.groups.where.not(id: group_ids).destroy_all
+    delete_collection(course.groups.where.not(id: group_ids))
+  end
+
+  def delete_collection(query, hard_delete = false, field = 'workflow_state')
+    if @options.include?(:soft_delete) && !hard_delete
+      #failsafe in case something was missed
+      begin
+        query.update_all(field.to_sym => 'deleted')
+      rescue => e
+        Rails.logger.error("Error deleting with soft delete, attempting hard")
+        delete_collection(query, true)
+      end
+    else
+      query.destroy_all
+    end
+  end
+
+  def delete_object(object, hard_delete = false, field = 'workflow_state')
+    if @options.include?(:soft_delete) && !hard_delete
+      begin
+        object.update_attributes(field.to_sym => 'deleted')
+      rescue => e
+        Rails.logger.error("Error deleting with soft delete, attempting hard")
+        delete_object(object, true)
+      end
+    else
+      object.destroy!
+    end
   end
 
   def sync_group_memberships(collection)

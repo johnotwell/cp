@@ -156,6 +156,61 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     end
   end
 
+  describe 'delete_records' do
+    it 'hard deletes collections' do
+      CoalescingPanda::Enrollment.destroy_all
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      enrollments = enrollments_response
+      enrollments.shift
+      worker = CoalescingPanda::Workers::CourseMiner.new(course, [:enrollments])
+      worker.sync_enrollments(enrollments)
+      expect(CoalescingPanda::Enrollment.count).to eq 2
+    end
+
+    it 'marks collection records deleted' do
+      CoalescingPanda::Enrollment.destroy_all
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      enrollments = enrollments_response
+      enrollments.shift
+      worker = CoalescingPanda::Workers::CourseMiner.new(course, [:enrollments, :soft_delete])
+      worker.sync_enrollments(enrollments)
+      expect(CoalescingPanda::Enrollment.count).to eq 3
+      expect(CoalescingPanda::Enrollment.where(workflow_state: 'deleted').count).to eq(1)
+    end
+
+    it 'hard deletes records' do
+      CoalescingPanda::Enrollment.destroy_all
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      users = users_response
+      users.shift
+      worker = CoalescingPanda::Workers::CourseMiner.new(course, [:users])
+      worker.sync_users(users)
+      expect(CoalescingPanda::User.count).to eq 2
+      expect(CoalescingPanda::Enrollment.count).to eq 2
+    end
+
+    it 'marks records deleted' do
+      CoalescingPanda::Enrollment.destroy_all
+      worker.sync_sections(sections_response)
+      worker.sync_users(users_response)
+      worker.sync_enrollments(enrollments_response)
+      users = users_response
+      users.shift
+      worker = CoalescingPanda::Workers::CourseMiner.new(course, [:users, :soft_delete])
+      worker.sync_users(users)
+      expect(CoalescingPanda::User.count).to eq 3
+      expect(CoalescingPanda::Enrollment.count).to eq 3
+      expect(CoalescingPanda::Enrollment.where(workflow_state: 'deleted').count).to eq(1)
+      expect(CoalescingPanda::User.where(workflow_state: 'deleted').count).to eq(1)
+    end
+  end
+
   describe '#standard_attributes' do
     let(:start_time) { Time.now.iso8601 }
     let(:end_time) { 3.weeks.from_now.iso8601 }
