@@ -270,7 +270,7 @@ class CoalescingPanda::Workers::CourseMiner
     if @options.include?(:soft_delete) && !hard_delete
       #failsafe in case something was missed
       begin
-        query.update_all(field.to_sym => 'deleted')
+        query.reorder('').update_all(field.to_sym => 'deleted')
       rescue => e
         Rails.logger.error("Error deleting with soft delete, attempting hard")
         delete_collection(query, true)
