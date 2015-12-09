@@ -11,22 +11,56 @@ module CoalescingPanda
         uri = BearcatUri.new(launch_presentation_return_url)
         set_session(launch_presentation_return_url)
 
-        if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, uri.api_domain).pluck(:api_token).first
-          @client = Bearcat::Client.new(token: token, prefix: uri.prefix)
-        elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
-          client_id = @lti_account.oauth2_client_id
-          client = Bearcat::Client.new(prefix: uri.prefix)
-          session['state'] = SecureRandom.hex(32)
-          redirect_url = [coalescing_panda_url, coalescing_panda.oauth2_redirect_path({key: params['oauth_consumer_key'], user_id: user_id, api_domain: uri.api_domain, state: session['state']})].join
-          @canvas_url = client.auth_redirect_url(client_id, redirect_url)
-
-          #delete the added params so the original oauth sig still works
-          @lti_params = params.to_hash
-          @lti_params.delete('action')
-          @lti_params.delete('controller')
-          render 'coalescing_panda/oauth2/oauth2', layout: 'coalescing_panda/application'
+        api_auth = CanvasApiAuth.find_by('user_id = ? and api_domain = ?', user_id, uri.api_domain)
+        if api_auth
+          begin
+            refresh_token(uri, api_auth) if api_auth.expired?
+            @client = Bearcat::Client.new(token: api_auth.api_token, prefix: uri.prefix)
+            @client.user_profile 'self'
+          rescue Footrest::HttpError::BadRequest, Footrest::HttpError::Unauthorized
+            # If we can't retrieve our own user profile, or the token refresh fails, something is awry on the canvas end
+            # and we'll need to go through the oauth flow again
+            render_oauth2_page uri, user_id
+          end
+        else
+          render_oauth2_page uri, user_id
         end
       end
+    end
+
+    def render_oauth2_page(uri, user_id)
+      @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
+      return unless @lti_account
+
+      client_id = @lti_account.oauth2_client_id
+      client = Bearcat::Client.new(prefix: uri.prefix)
+      session['state'] = SecureRandom.hex(32)
+      redirect_url = [coalescing_panda_url, coalescing_panda.oauth2_redirect_path({key: params['oauth_consumer_key'], user_id: user_id, api_domain: uri.api_domain, state: session['state']})].join
+      @canvas_url = client.auth_redirect_url(client_id, redirect_url)
+
+      #delete the added params so the original oauth sig still works
+      @lti_params = params.to_hash
+      @lti_params.delete('action')
+      @lti_params.delete('controller')
+      render 'coalescing_panda/oauth2/oauth2', layout: 'coalescing_panda/application'
+    end
+
+    def refresh_token(uri, api_auth)
+      refresh_client = Bearcat::Client.new(prefix: uri.prefix)
+      refresh_body = refresh_client.retrieve_token(@lti_account.oauth2_client_id, coalescing_panda.oauth2_redirect_url,
+        @lti_account.oauth2_client_key, api_auth.refresh_token, 'refresh_token')
+      api_auth.update({ api_token: refresh_body['access_token'], expires_at: (Time.now + refresh_body['expires_in']) })
+    end
+
+    def check_refresh_token
+      uri = BearcatUri.new(session['uri'])
+      api_auth = CanvasApiAuth.find_by(user_id: session['user_id'], api_domain: uri.api_domain)
+      @lti_account = LtiAccount.find_by(key: session['oauth_consumer_key'])
+      return if @lti_account.nil? || api_auth.nil? # Not all tools use oauth
+
+      refresh_token(uri, api_auth) if api_auth.expired?
+    rescue Footrest::HttpError::BadRequest
+      render_oauth2_page uri, session['user_id']
     end
 
     def set_session(launch_presentation_return_url)
@@ -46,13 +80,18 @@ module CoalescingPanda
 
       if (session['user_id'] && session['uri'])
         uri = BearcatUri.new(session['uri'])
-        token = CanvasApiAuth.where('user_id = ? and api_domain = ?', session['user_id'], uri.api_domain).pluck(:api_token).first
-        @client = Bearcat::Client.new(token: token, prefix: uri.prefix) if token
+        api_auth = CanvasApiAuth.find_by('user_id = ? and api_domain = ?', session['user_id'], uri.api_domain)
+        if api_auth && !api_auth.expired?
+          @client = Bearcat::Client.new(token: api_auth.api_token, prefix: uri.prefix)
+          @client.user_profile 'self'
+        end
       end
 
       @lti_account = LtiAccount.find_by_key(session['oauth_consumer_key']) if session['oauth_consumer_key']
 
       !!@client
+    rescue Footrest::HttpError::Unauthorized
+      false
     end
 
     def lti_authorize!(*roles)

@@ -16,12 +16,14 @@ module CoalescingPanda
         prefix = [oauth2_protocol, '://', api_domain].join
         Rails.logger.info "Creating Bearcat client for auth token retrieval pointed to: #{prefix}"
         client = Bearcat::Client.new(prefix: prefix)
-        token = client.retrieve_token(client_id, coalescing_panda.oauth2_redirect_url, client_key, params['code'])
-        CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).first_or_create do |auth|
-          auth.api_token = token
-          auth.user_id = user_id
-          auth.api_domain = api_domain
-        end
+        token_body = client.retrieve_token(client_id, coalescing_panda.oauth2_redirect_url, client_key, params['code'])
+        auth = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).first_or_initialize
+        auth.api_token = token_body['access_token']
+        auth.refresh_token = token_body['refresh_token']
+        auth.expires_at = Time.now + token_body['expires_in'] if token_body['expires_in']
+        auth.user_id = user_id
+        auth.api_domain = api_domain
+        auth.save!
       end
     end
 
