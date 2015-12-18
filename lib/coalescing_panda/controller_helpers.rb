@@ -53,6 +53,7 @@ module CoalescingPanda
     end
 
     def check_refresh_token
+      return unless session['uri'] && session['user_id'] && session['oauth_consumer_key']
       uri = BearcatUri.new(session['uri'])
       api_auth = CanvasApiAuth.find_by(user_id: session['user_id'], api_domain: uri.api_domain)
       @lti_account = LtiAccount.find_by(key: session['oauth_consumer_key'])
