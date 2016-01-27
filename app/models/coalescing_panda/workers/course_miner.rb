@@ -3,7 +3,7 @@ class CoalescingPanda::Workers::CourseMiner
   COMPLETED_STATUSES = ['Completed', 'Error']
   RUNNING_STATUSES = ['Queued', 'Started']
 
-  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :assignment_group_ids, :group_ids, :user_ids
+  attr_accessor :options, :account, :course, :batch, :course_section_ids, :enrollment_ids, :assignment_ids, :assignment_group_ids, :group_ids, :group_membership_ids, :user_ids
 
   def initialize(course, options = [])
     @course = course
@@ -15,6 +15,7 @@ class CoalescingPanda::Workers::CourseMiner
     @assignment_ids = []
     @assignment_group_ids = []
     @group_ids = []
+    @group_membership_ids = []
     @user_ids = []
   end
 
@@ -302,10 +303,12 @@ class CoalescingPanda::Workers::CourseMiner
         group_membership.user = course.users.find_by(canvas_user_id: values['user_id'].to_s)
         group_membership.assign_attributes(standard_attributes(group_membership, values))
         group_membership.save(validate: false)
+        group_membership_ids << group_membership.id
       rescue => e
         Rails.logger.error "Error syncing group memebership: #{values} Error: #{e}"
       end
     end
+    delete_collection(course.group_memberships.where.not(id: group_membership_ids))
   end
 
   def standard_attributes(record, attributes)
