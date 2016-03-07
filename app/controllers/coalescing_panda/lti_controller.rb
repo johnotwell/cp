@@ -6,6 +6,13 @@ module CoalescingPanda
     def lti_config
       lti_options = CoalescingPanda.lti_options
       lti_nav = CoalescingPanda.lti_paths
+      lti_environments = CoalescingPanda.lti_environments
+
+      if lti_environments.empty?
+        render text: 'Domains must be set in lti_environments'
+        return
+      end
+
       lti_nav[:course][:text] = params[:course_navigation_label] if params[:course_navigation_label].present?
       lti_nav[:account][:text] = params[:account_navigation_label] if params[:account_navigation_label].present?
       platform = 'canvas.instructure.com'
@@ -24,6 +31,8 @@ module CoalescingPanda
       lti_nav.each do |k, v|
         tc.set_ext_param(platform, setting_name(k.to_s), ext_params(v))
       end
+
+      tc.set_ext_param(platform, :environments, lti_environments)
 
       #strip the launch url
       xml = tc.to_xml

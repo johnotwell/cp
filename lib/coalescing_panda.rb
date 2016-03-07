@@ -16,6 +16,7 @@ module CoalescingPanda
   @@lti_navigation = {}
   @@staged_navigation = {}
   @@lti_options = {}
+  @@lti_environments = {}
 
   def self.lti_options= lti_options
     @@lti_options = lti_options
@@ -23,6 +24,14 @@ module CoalescingPanda
 
   def self.lti_options
     @@lti_options.deep_dup
+  end
+
+  def self.lti_environments=(lti_environments)
+    @@lti_environments = lti_environments
+  end
+
+  def self.lti_environments
+    @@lti_environments.deep_dup
   end
 
   def self.register_navigation(navigation)

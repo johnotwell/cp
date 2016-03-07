@@ -4,6 +4,10 @@ describe CoalescingPanda::LtiController, :type => :controller do
   routes { CoalescingPanda::Engine.routes }
 
   describe '#lti_config' do
+    before :each do
+      CoalescingPanda.class_variable_set(:@@lti_navigation, {})
+      CoalescingPanda.lti_environments = { test_domain: 'test' }
+    end
 
     it 'generates lti xml config'do
       get(:lti_config)
@@ -28,6 +32,13 @@ describe CoalescingPanda::LtiController, :type => :controller do
       account_nav.at_xpath('lticm:property[@name="enabled"]').text.should == 'false'
       account_nav.at_xpath('lticm:property[@name="text"]').text.should == 'My Title'
       account_nav.at_xpath('lticm:property[@name="url"]').text.should == 'foo'
+    end
+
+    it 'includes environment information' do
+      get(:lti_config)
+      xml = Nokogiri::XML(response.body)
+      environments = xml.at_xpath('//lticm:options[@name="environments"]')
+      environments.at_xpath('lticm:property[@name="test_domain"]').text.should == 'test'
     end
 
   end

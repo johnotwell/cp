@@ -33,6 +33,7 @@ An initializer will also need to be created to populate the options for lti tool
 in the intializers folder in your rails project, and includeing the following:
 
     CoalescingPanda.lti_options= {title:'LTI Tool Title'}
+    CoalescingPanda.lti_environments = { domain: 'https://production-instance-of-tool.com', test_domain: 'https://test-instance-of-tool.com' }
     CoalescingPanda.stage_navigation(:course, {enabled: true, text: 'course link title', visibility: 'admins'})
     CoalescingPanda.stage_navigation(:admin, {enabled: true, text: 'admin link title', visibility: 'admins'})
 
