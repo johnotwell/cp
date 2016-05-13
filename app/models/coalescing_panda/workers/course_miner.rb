@@ -290,7 +290,7 @@ class CoalescingPanda::Workers::CourseMiner
         delete_object(object, true)
       end
     else
-      object.destroy!
+      object.destroy
     end
   end
 
