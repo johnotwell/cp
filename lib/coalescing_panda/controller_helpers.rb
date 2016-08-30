@@ -34,9 +34,11 @@ module CoalescingPanda
 
       client_id = @lti_account.oauth2_client_id
       client = Bearcat::Client.new(prefix: uri.prefix)
-      session['state'] = SecureRandom.hex(32)
-      redirect_url = [coalescing_panda_url, coalescing_panda.oauth2_redirect_path({key: params['oauth_consumer_key'], user_id: user_id, api_domain: uri.api_domain, state: session['state']})].join
-      @canvas_url = client.auth_redirect_url(client_id, redirect_url)
+      state = SecureRandom.hex(32)
+      OauthState.create! state_key: state, data: { key: params['oauth_consumer_key'], user_id: user_id, api_domain: uri.api_domain }
+      redirect_path = coalescing_panda.oauth2_redirect_path
+      redirect_url = [coalescing_panda_url, redirect_path.sub(/^\/lti/, '')].join
+      @canvas_url = client.auth_redirect_url(client_id, redirect_url, { state: state })
 
       #delete the added params so the original oauth sig still works
       @lti_params = params.to_hash

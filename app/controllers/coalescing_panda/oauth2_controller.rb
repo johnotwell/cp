@@ -7,12 +7,13 @@ module CoalescingPanda
     end
 
     def redirect
-      if !params[:error] && valid_state_token
-        lti_account = LtiAccount.find_by_key(params[:key])
+      if !params[:error] && retrieve_oauth_state
+        lti_account = LtiAccount.find_by_key(@oauth_state.data[:key])
         client_id = lti_account.oauth2_client_id
         client_key = lti_account.oauth2_client_key
-        user_id = params[:user_id]
-        api_domain = params[:api_domain]
+        user_id = @oauth_state.data[:user_id]
+        api_domain = @oauth_state.data[:api_domain]
+        @oauth_state.destroy
         prefix = [oauth2_protocol, '://', api_domain].join
         Rails.logger.info "Creating Bearcat client for auth token retrieval pointed to: #{prefix}"
         client = Bearcat::Client.new(prefix: prefix)
@@ -32,6 +33,10 @@ module CoalescingPanda
 
     def oauth2_protocol
       ENV['OAUTH_PROTOCOL'] || 'https'
+    end
+
+    def retrieve_oauth_state
+      @oauth_state ||= params[:state].present? && OauthState.find_by(state_key: params[:state])
     end
 
     def valid_state_token
