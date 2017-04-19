@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'useragent'
   s.add_dependency 'delayed_job_active_record'
   s.add_dependency 'open_uri_redirections'
+  s.add_dependency 'oauth'
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
