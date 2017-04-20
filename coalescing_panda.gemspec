@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 4.2.1"
   s.add_dependency "bearcat", "~> 1.3.0"
   s.add_dependency "macaddr", "1.6.1"
-  s.add_dependency "ims-lti"
+  s.add_dependency "ims-lti", '>= 2.1.0'
   s.add_dependency "haml-rails"
   s.add_dependency 'sass-rails', '>= 3.2'
   s.add_dependency "jquery-rails"
@@ -39,4 +39,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pry"
   s.add_development_dependency 'webmock'
   s.add_development_dependency 'lol_dba'
+  s.add_development_dependency 'database_cleaner'
 end

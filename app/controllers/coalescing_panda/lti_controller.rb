@@ -17,7 +17,7 @@ module CoalescingPanda
       lti_nav[:account][:text] = params[:account_navigation_label] if params[:account_navigation_label].present?
       platform = 'canvas.instructure.com'
       host = "#{request.scheme}://#{request.host_with_port}"
-      tc = IMS::LTI::ToolConfig.new(:title => lti_options[:title], :launch_url => ("#{host}#{lti_options[:launch_route]}") || 'ABC')
+      tc = IMS::LTI::Services::ToolConfig.new(:title => lti_options[:title], :launch_url => ("#{host}#{lti_options[:launch_route]}") || 'ABC')
       tc.set_ext_param(platform, :domain, request.host)
       tc.set_ext_param(platform, :privacy_level, 'public')
       tc.set_custom_param(:custom_canvas_role, '$Canvas.membership.roles')

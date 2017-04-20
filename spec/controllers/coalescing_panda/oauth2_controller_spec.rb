@@ -10,6 +10,7 @@ describe CoalescingPanda::Oauth2Controller, :type => :controller do
       ENV['OAUTH_PROTOCOL'] = 'http'
       Bearcat::Client.any_instance.stub(retrieve_token: { 'access_token' => 'token', 'refresh_token' => 'token', 'expires_in' => 3600 })
       session[:state] = 'test'
+      CoalescingPanda::OauthState.create!(state_key: session[:state], data: { key: account.key, user_id: user.id, api_domain: 'foo.com' })
       get :redirect, {user_id: user.id, api_domain: 'foo.com', code: 'bar', key: account.key, state: 'test'}
       auth = CoalescingPanda::CanvasApiAuth.find_by_user_id_and_api_domain(user.id, 'foo.com')
       auth.should_not == nil

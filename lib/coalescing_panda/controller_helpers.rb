@@ -100,8 +100,8 @@ module CoalescingPanda
     def lti_authorize!(*roles)
       authorized = false
       if @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
-        @tp = IMS::LTI::ToolProvider.new(@lti_account.key, @lti_account.secret, params)
-        authorized = @tp.valid_request?(request)
+        authentiactor = IMS::LTI::Services::MessageAuthenticator.new(request.original_url, request.request_parameters, @lti_account.secret)
+        authorized = authentiactor.valid_signature?
       end
       logger.info 'not authorized on tp valid request' if !authorized
       authorized = authorized && (roles.count == 0 || (roles & lti_roles).count > 0)
