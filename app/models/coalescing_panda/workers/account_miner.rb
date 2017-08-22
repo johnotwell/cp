@@ -87,13 +87,11 @@ class CoalescingPanda::Workers::AccountMiner
       end
     end
     removed_courses = account.courses.where.not(id: course_ids)
+    account.submissions.where(coalescing_panda_course_id: removed_courses.map(&:id)).destroy_all
     removed_courses.each do |course|
-      course.enrollments.each do |enrollment|
-        account.submissions.where(coalescing_panda_course_id: enrollment.course.id).destroy_all
-        enrollment.destroy
-      end
+      course.enrollments.destroy_all
     end
-    removed_courses.destroy_all
+  removed_courses.destroy_all
   end
 
   def sync_users(collection)
@@ -111,11 +109,9 @@ class CoalescingPanda::Workers::AccountMiner
       end
     end
     removed_users = account.users.where.not(id: user_ids)
+    account.submissions.where(coalescing_panda_user_id: removed_users.map(&:id)).destroy_all
     removed_users.each do |user|
-      user.enrollments.each do |enrollment|
-        account.submissions.where(coalescing_panda_user_id: enrollment.user.id).destroy_all
-        enrollment.destroy
-      end
+      user.enrollments.destroy_all
     end
     removed_users.destroy_all
   end
