@@ -65,36 +65,33 @@ class CoalescingPanda::Workers::CourseMiner
     should_download
   end
 
+  DEFAULT_PARAMS = { 'per_page' => 100 }.freeze
+
   def process_api_data(key)
     case key
     when :assignment_groups
-      collection = api_client.list_assignment_groups(course.canvas_course_id).all_pages!
+      collection = api_client.list_assignment_groups(course.canvas_course_id, DEFAULT_PARAMS).all_pages!
       sync_assignment_groups(collection)
     when :sections
-      collection = api_client.course_sections(course.canvas_course_id).all_pages!
+      collection = api_client.course_sections(course.canvas_course_id, DEFAULT_PARAMS).all_pages!
       sync_sections(collection)
     when :users
-      collection = api_client.list_course_users(course.canvas_course_id, {'enrollment_state' => enrollment_states}).all_pages!
+      collection = api_client.list_course_users(course.canvas_course_id, DEFAULT_PARAMS.merge({'enrollment_state' => enrollment_states})).all_pages!
       sync_users(collection)
     when :enrollments
-      collection = api_client.course_enrollments(course.canvas_course_id, {'state' => enrollment_states}).all_pages!
+      collection = api_client.course_enrollments(course.canvas_course_id, DEFAULT_PARAMS.merge({'state' => enrollment_states})).all_pages!
       sync_enrollments(collection)
     when :assignments
-      collection = api_client.assignments(course.canvas_course_id).all_pages!
+      collection = api_client.assignments(course.canvas_course_id, DEFAULT_PARAMS).all_pages!
       sync_assignments(collection)
     when :submissions
-      collection = []
-      course.assignments.each do |assignment|
-        api_client.get_course_submissions(course.canvas_course_id, assignment.canvas_assignment_id).all_pages!.each do |submissions|
-          collection << submissions
-        end
-      end
+      collection = api_client.course_submissions(course.canvas_course_id, DEFAULT_PARAMS).all_pages!
       sync_submissions(collection)
     when :groups
       collection = api_client.course_groups(course.canvas_course_id).all_pages!
       sync_groups(collection)
     when :group_categories
-      collection = api_client.list_group_categories('courses', course.canvas_course_id).all_pages!
+      collection = api_client.list_group_categories('courses', course.canvas_course_id, DEFAULT_PARAMS).all_pages!
       sync_group_categories(collection)
     when :group_memberships
       collection = []

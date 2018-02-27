@@ -20,11 +20,9 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T18:04:38Z", "description"=>"<p>What is your name?</p>", "due_at"=>nil, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>1, "id"=>1, "lock_at"=>nil, "peer_reviews"=>false, "points_possible"=>100, "position"=>1, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T18:04:42Z", "course_id"=>1, "name"=>"Gimme your name", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/1", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false},
     {"assignment_group_id"=>1, "automatic_peer_reviews"=>false, "created_at"=>"2014-11-18T19:10:28Z", "description"=>"<p>What is your Favorite Color?</p>", "due_at"=>nil, "grade_group_students_individually"=>false, "grading_standard_id"=>nil, "grading_type"=>"points", "group_category_id"=>nil, "id"=>2, "lock_at"=>nil, "peer_reviews"=>false, "points_possible"=>100, "position"=>2, "post_to_sis"=>true, "unlock_at"=>nil, "updated_at"=>"2014-11-18T19:10:30Z", "course_id"=>1, "name"=>"Favorite Color", "submission_types"=>["online_text_entry"], "has_submitted_submissions"=>false, "muted"=>false, "html_url"=>"http://localhost:3000/courses/1/assignments/2", "needs_grading_count"=>0, "integration_id"=>nil, "integration_data"=>{}, "published"=>true, "unpublishable"=>true, "locked_for_user"=>false}
   ]}
-  let(:submissions_response1) {[
+  let(:submissions_response) {[
     {"assignment_id"=>1, "attempt"=>nil, "body"=>nil, "grade"=>"70", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:19Z", "grader_id"=>1, "id"=>3, "score"=>70, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>3, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/1/submissions/3?preview=1"},
-    {"assignment_id"=>1, "attempt"=>nil, "body"=>nil, "grade"=>"100", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:14Z", "grader_id"=>1, "id"=>1, "score"=>100, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>2, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/1/submissions/2?preview=1"}
-  ]}
-  let(:submissions_response2) {[
+    {"assignment_id"=>1, "attempt"=>nil, "body"=>nil, "grade"=>"100", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:14Z", "grader_id"=>1, "id"=>1, "score"=>100, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>2, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/1/submissions/2?preview=1"},
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"90", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:21Z", "grader_id"=>1, "id"=>4, "score"=>90, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>3, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/3?preview=1"},
     {"assignment_id"=>2, "attempt"=>nil, "body"=>nil, "grade"=>"80", "grade_matches_current_submission"=>true, "graded_at"=>"2014-11-20T23:18:17Z", "grader_id"=>1, "id"=>2, "score"=>80, "submission_type"=>nil, "submitted_at"=>nil, "url"=>nil, "user_id"=>2, "workflow_state"=>"graded", "late"=>false, "preview_url"=>"http://localhost:3000/courses/1/assignments/2/submissions/2?preview=1"}
   ]}
@@ -49,11 +47,10 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
     Bearcat::Client.any_instance.stub(:course_enrollments) { double(Bearcat::ApiArray, :all_pages! => enrollments_response) }
     Bearcat::Client.any_instance.stub(:assignments) { double(Bearcat::ApiArray, :all_pages! => assignments_response) }
     Bearcat::Client.any_instance.stub(:get_course_submissions) { double(Bearcat::ApiArray, :all_pages! => {}) }
-    Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "1") { double(Bearcat::ApiArray, :all_pages! => submissions_response1) }
-    Bearcat::Client.any_instance.stub(:get_course_submissions).with("1", "2") { double(Bearcat::ApiArray, :all_pages! => submissions_response2) }
     Bearcat::Client.any_instance.stub(:course_groups) { double(Bearcat::ApiArray, :all_pages! => groups_response) }
     Bearcat::Client.any_instance.stub(:list_group_memberships) { double(Bearcat::ApiArray, :all_pages! => membership_response) }
-    Bearcat::Client.any_instance.stub(:list_assignment_groups) { double(Bearcat::ApiArray, :all_pages! => assignment_groups_response) }
+    Bearcat::Client.any_instance.stub(:course_submissions) { double(Bearcat::ApiArray, :all_pages! => submissions_response) }
+    Bearcat::Client.any_instance.stub(:list_assignment_groups) { double(Bearcat::ApiArray, :all_pages! => []) }
   end
 
   describe '#initialize' do
@@ -133,7 +130,6 @@ RSpec.describe CoalescingPanda::Workers::CourseMiner, :type => :model do
 
     it 'creates submissions' do
       CoalescingPanda::Submission.destroy_all
-      submissions_response = submissions_response1 + submissions_response2
       worker.sync_sections(sections_response)
       worker.sync_users(users_response)
       worker.sync_enrollments(enrollments_response)
