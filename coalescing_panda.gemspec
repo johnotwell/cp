@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'open_uri_redirections'
   s.add_dependency 'oauth', '~> 0.5.4'
   s.add_dependency 'rubyzip', '>= 1.0.0'
+  s.add_dependency 'secure_headers', '~> 6.3'
   s.add_dependency 'zip-zip'
 
   s.add_development_dependency "sqlite3"
