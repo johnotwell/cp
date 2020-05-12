@@ -1,0 +1,9 @@
+<script>
+ const mainWindow = window.parent;
+ var url = window.location.href;
+ mainWindow.postMessage({
+     messageType: "requestFullWindowLaunch",
+     data: url
+ }, '*');
+</script>
+
