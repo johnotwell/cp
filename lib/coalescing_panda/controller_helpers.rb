@@ -20,10 +20,10 @@ module CoalescingPanda
         session['custom_canvas_account_id'] = params['custom_canvas_account_id']
 
         if token = CanvasApiAuth.where('user_id = ? and api_domain = ?', user_id, api_domain).pluck(:api_token).first
-          @client = Bearcat::Client.new(token: token, prefix: scheme+api_domain)
+          @client = Bearcat::Client.new({ token: token, prefix: scheme+api_domain })
         elsif @lti_account = params['oauth_consumer_key'] && LtiAccount.find_by_key(params['oauth_consumer_key'])
           client_id = @lti_account.oauth2_client_id
-          client = Bearcat::Client.new(prefix: scheme+api_domain)
+          client = Bearcat::Client.new({ prefix: scheme+api_domain })
           session['state'] = SecureRandom.hex(32)
           @canvas_url = client.auth_redirect_url(client_id,
                                                  coalescing_panda.oauth2_redirect_url({key: params['oauth_consumer_key'],
@@ -148,7 +148,7 @@ module CoalescingPanda
     def cookies_need_iframe_fix?
       @browser ||= Browser.new({ua: request.user_agent})
       # Pre-Ruby-2.3 does not have '&.'
-      reqref_include_sessless_launch = request.referrer.included?('sessionless_launch') if request.referrer
+      reqref_include_sessless_launch = request.referrer.include?('sessionless_launch') if request.referrer
       @browser.safari? && !reqref_include_sessless_launch && !session[:safari_cookie_fixed]  && !params[:platform_redirect_url]
     end
 
